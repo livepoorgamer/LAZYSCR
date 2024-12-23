@@ -6,99 +6,60 @@
   <title>Custom Flight Formatter</title>
   <style>
     body {
-      font-family: 'Roboto', Arial, sans-serif;
+      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
-      background-color: #eef2f7;
-      color: #333;
+      padding: 20px;
+      background-color: #f4f4f4;
     }
-
     .container {
-      max-width: 700px;
-      margin: 40px auto;
-      padding: 30px;
-      background: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-
-    h1 {
-      text-align: center;
-      font-size: 24px;
-      margin-bottom: 20px;
-      color: #007BFF;
-    }
-
-    textarea, input, select, button {
-      font-family: 'Roboto', Arial, sans-serif;
-      font-size: 14px;
-    }
-
-    textarea, input, select {
+    textarea, input {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
+      padding: 10px;
       border: 1px solid #ccc;
-      border-radius: 5px;
-      box-sizing: border-box;
-      transition: border-color 0.3s;
-    }
-
-    textarea:focus, input:focus, select:focus {
-      border-color: #007BFF;
-      outline: none;
-    }
-
-    button {
-      padding: 12px 20px;
-      margin: 5px 5px 0 0;
-      background-color: #007BFF;
-      color: #ffffff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+      border-radius: 4px;
       font-size: 14px;
-      transition: background-color 0.3s, transform 0.2s;
+      resize: vertical;
     }
-
+    button {
+      padding: 10px 15px;
+      margin-right: 10px;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
     button:hover {
       background-color: #0056b3;
-      transform: translateY(-1px);
     }
-
-    button:active {
-      transform: scale(0.98);
-    }
-
-    .output-container {
-      margin-top: 20px;
-      padding: 15px;
-      background: #f7f9fc;
+    select {
+      padding: 10px;
+      margin-left: 10px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    .output {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f9f9f9;
+      border: 1px dashed #ccc;
+      border-radius: 4px;
       white-space: pre-wrap;
       font-family: monospace;
-      color: #555;
     }
-
-    .output-heading {
+    .heading {
       font-weight: bold;
-      font-size: 16px;
-      color: #007BFF;
-      margin-bottom: 10px;
-    }
-
-    .buttons-group {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-    }
-
-    @media (max-width: 600px) {
-      button {
-        width: 100%;
-        margin-bottom: 10px;
-      }
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -107,7 +68,7 @@
     <h1>Custom Flight Formatter</h1>
     <textarea id="userInput" placeholder="Paste your flight data here..."></textarea>
     <input id="regInput" placeholder="Enter aircraft registration (e.g., MABJA)" />
-    <div class="buttons-group">
+    <div>
       <button onclick="formatDeparture()">DEPARTURE</button>
       <button onclick="formatArrival()">ARRIVAL</button>
       <button onclick="formatBoth()">BOTH</button>
@@ -122,8 +83,7 @@
         <option value="NEW">NEW SLOT</option>
         <option value="CANCEL">CANCEL SLOT</option>
       </select>
-    </div>
-    <div id="departureContainer" class="output-container">
+      <div id="departureContainer" class="output-container">
       <div class="output-heading">Departure</div>
       <pre id="departureOutput"></pre>
       <button onclick="sendEmail('departureOutput')">SEND SCR EMAIL</button>
@@ -133,100 +93,199 @@
       <pre id="arrivalOutput"></pre>
       <button onclick="sendEmail('arrivalOutput')">SEND SCR EMAIL</button>
     </div>
+    <div id="output" class="output"></div>
   </div>
 
   <script>
-    function parseInput(input) {
-      const parts = input.trim().split(/\s+/);
-      if (parts.length !== 7) {
-        alert("Error: Invalid input format. Ensure the input contains exactly 7 parts.");
-        return null;
-      }
-
-      const [flightRaw, from, to, fullDate, departureTime, arrivalTime, code] = parts;
-      const date = fullDate.slice(0, 5); // Extract DDMMM
-
-      let dayOfOperation;
-      try {
-        const parsedDate = new Date(fullDate);
-        const dayOfWeek = parsedDate.toLocaleDateString('en-US', { weekday: 'long' });
-        const dayMapping = {
-          Sunday: '0000007',
-          Monday: '1000000',
-          Tuesday: '0200000',
-          Wednesday: '0030000',
-          Thursday: '0004000',
-          Friday: '0000500',
-          Saturday: '0000060',
-        };
-        dayOfOperation = dayMapping[dayOfWeek] || '1000000';
-      } catch {
-        alert("Error: Invalid date format.");
-        return null;
-      }
-
-      const flightPrefix = flightRaw.slice(0, 2);
-      const flightNumber = flightRaw.slice(2).match(/\d+/)?.[0] || "000";
-      const flightLetters = flightRaw.slice(2).replace(/\d+/g, "");
-      const flight = `${flightPrefix}${flightNumber.padStart(3, "0")}${flightLetters}`;
-
-      return { flight, from, to, date, departureTime, arrivalTime, code, dayOfOperation };
+    function getDayOfOperation(dayOfWeek) {
+      const dayMapping = {
+        'Sunday': '0000007',
+        'Monday': '1000000',
+        'Tuesday': '0200000',
+        'Wednesday': '0030000',
+        'Thursday': '0004000',
+        'Friday': '0000500',
+        'Saturday': '0000060'
+      };
+      return dayMapping[dayOfWeek] || '1000000'; // Default to '1000000' (Monday) if not found
     }
 
-    function formatMessage(type, data, slotType, siLine) {
-      const { flight, from, to, date, departureTime, arrivalTime, dayOfOperation, code } = data;
-      const codePrefix = { P: "000", D: "008", K: "000", T: "000", J: "189" }[code] || "000";
-      const flightType = slotType === "CANCEL" ? "D" : "N";
-      return `
-SCR 
-W24 
-${date} 
-${type === "departure" ? from : to} 
-${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${type === "departure" ? `${departureTime}${to}` : `${from}${arrivalTime}`} ${code} 
-${siLine}
-      `.trim();
+    function parseInput(input) {
+      const parts = input.trim().split(' ');
+      if (parts.length !== 7) {
+        return null; // Invalid format
+      }
+
+      const flightRaw = parts[0];
+      const from = parts[1];
+      const to = parts[2];
+      const date = parts[3].slice(0, 5); // Extract only DDMMM
+      const fullDate = parts[3]; // Full date
+      const departureTime = parts[4];
+      const arrivalTime = parts[5];
+      const code = parts[6];
+
+      // Convert the fullDate to a day of the week
+      const parsedDate = new Date(fullDate);
+      const dayOfWeek = parsedDate.toLocaleDateString('en-US', { weekday: 'long' });
+      const dayOfOperation = getDayOfOperation(dayOfWeek);
+
+      // Pad flight number
+      const flightPrefix = flightRaw.slice(0, 2);
+      const flightNumber = flightRaw.slice(2);
+      const flightDigits = flightNumber.match(/\d+/)?.[0] || "";
+      const flightLetters = flightNumber.replace(/\d+/g, "");
+      const paddedFlightDigits = flightDigits.padStart(3, "0");
+      const flight = `${flightPrefix}${paddedFlightDigits}${flightLetters}`;
+
+      return { flight, from, to, date, fullDate, departureTime, arrivalTime, code, dayOfOperation };
+    }
+
+    function getSelectedOption() {
+      return document.getElementById('dropdownMenu').value;
+    }
+
+    function getSlotType() {
+      return document.getElementById('slotType').value;
+    }
+
+    function getAircraftReg() {
+      const regInput = document.getElementById('regInput').value.trim();
+      return regInput || "[UNKNOWN REG]"; // Default if no registration is provided
+    }
+
+    function getCodePrefix(option) {
+      switch (option) {
+        case "P":
+        case "T":
+        case "K":
+          return "000";
+        case "J":
+          return "189"; 
+        case "D":
+          return "008";
+        default:
+          return "000";
+      }
     }
 
     function formatDeparture() {
       const input = document.getElementById('userInput').value;
       const data = parseInput(input);
-      if (!data) return;
+      if (!data) {
+        document.getElementById('output').textContent = 'Error: Invalid input format.';
+        return;
+      }
 
-      const slotType = document.getElementById('slotType').value;
-      const reg = document.getElementById('regInput').value.trim() || "[UNKNOWN REG]";
-      const siLine = slotType === "CANCEL"
-        ? `SI ${slotType} SLOT REQ ${data.from} // LEARJET REG: ${reg}`
-        : `SI ${slotType} SLOT REQ ${data.from}`;
+      const { flight, from, to, date, departureTime, dayOfOperation } = data;
+      const option = getSelectedOption();
+      const slotType = getSlotType();
+      const codePrefix = getCodePrefix(option);
+      const reg = getAircraftReg();
 
-      const output = formatMessage("departure", data, slotType, siLine);
-      document.getElementById('departureOutput').textContent = output;
+      const flightType = slotType === "CANCEL" ? "D" : "N";
+      const siLine = option === "D" ? `SI ${slotType} SLOT REQ ${from} // LEARJET REG: ${reg}` : `SI ${slotType} SLOT REQ ${from}`;
+
+      const output = `
+SCR 
+W24 
+${date} 
+${from} 
+${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${departureTime}${to} ${option} 
+${siLine}
+      `.trim();
+
+      document.getElementById('output').textContent = output;
     }
 
     function formatArrival() {
       const input = document.getElementById('userInput').value;
       const data = parseInput(input);
-      if (!data) return;
+      if (!data) {
+        document.getElementById('output').textContent = 'Error: Invalid input format.';
+        return;
+      }
 
-      const slotType = document.getElementById('slotType').value;
-      const reg = document.getElementById('regInput').value.trim() || "[UNKNOWN REG]";
-      const siLine = slotType === "CANCEL"
-        ? `SI ${slotType} SLOT REQ ${data.to} // LEARJET REG: ${reg}`
-        : `SI ${slotType} SLOT REQ ${data.to}`;
+      const { flight, from, to, date, arrivalTime, dayOfOperation } = data;
+      const option = getSelectedOption();
+      const slotType = getSlotType();
+      const codePrefix = getCodePrefix(option);
+      const reg = getAircraftReg();
 
-      const output = formatMessage("arrival", data, slotType, siLine);
-      document.getElementById('arrivalOutput').textContent = output;
+      const flightType = slotType === "CANCEL" ? "D" : "N";
+      const siLine = option === "D" ? `SI ${slotType} SLOT REQ ${to} // LEARJET REG: ${reg}` : `SI ${slotType} SLOT REQ ${to}`;
+
+      const output = `
+SCR 
+W24 
+${date} 
+${to} 
+${flightType}${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${from}${arrivalTime} ${option} 
+${siLine}
+      `.trim();
+
+      document.getElementById('output').textContent = output;
     }
 
-    function sendEmail(outputId) {
-      const output = document.getElementById(outputId).textContent.trim();
+    function formatBoth() {
+      const input = document.getElementById('userInput').value;
+      const data = parseInput(input);
+      if (!data) {
+        document.getElementById('output').textContent = 'Error: Invalid input format.';
+        return;
+      }
+
+      const { flight, from, to, date, departureTime, arrivalTime, dayOfOperation } = data;
+      const option = getSelectedOption();
+      const slotType = getSlotType();
+      const codePrefix = getCodePrefix(option);
+      const reg = getAircraftReg();
+
+      const flightType = slotType === "CANCEL" ? "D" : "N";
+
+      const departureSiLine = option === "D" ? `SI ${slotType} SLOT REQ ${from} // LEARJET REG: ${reg}` : `SI ${slotType} SLOT REQ ${from}`;
+      const arrivalSiLine = option === "D" ? `SI ${slotType} SLOT REQ ${to} // LEARJET REG: ${reg}` : `SI ${slotType} SLOT REQ ${to}`;
+
+      const departureOutput = `
+SCR 
+W24 
+${date} 
+${from} 
+${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${departureTime}${to} ${option} 
+${departureSiLine}
+      `.trim();
+
+      const arrivalOutput = `
+SCR 
+W24 
+${date} 
+${to} 
+${flightType}${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${from}${arrivalTime} ${option} 
+${arrivalSiLine}
+      `.trim();
+
+      document.getElementById('output').innerHTML = `
+<div class="heading">Departure:</div>
+<pre>${departureOutput}</pre>
+<div class="heading">Arrival:</div>
+<pre>${arrivalOutput}</pre>
+      `;
+    }
+
+    function sendEmail() {
+      const output = document.getElementById('output').textContent.trim();
       if (!output) {
         alert("No SCR message to send. Please format the message first.");
         return;
       }
+
       const emailSubject = encodeURIComponent("SCR Message");
       const emailBody = encodeURIComponent(output);
       const recipientEmail = "recipient@example.com"; // Replace with actual email
-      window.location.href = `mailto:${recipientEmail}?subject=${emailSubject}&body=${emailBody}`;
+
+      // Construct mailto link
+      const mailtoLink = `mailto:${recipientEmail}?subject=${emailSubject}&body=${emailBody}`;
+      window.location.href = mailtoLink;
     }
   </script>
 </body>
