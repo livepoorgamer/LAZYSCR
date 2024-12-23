@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Custom Flight Formatter</title>
-  <style>
+   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -95,7 +95,7 @@
     <h1>Custom Flight Formatter</h1>
     <textarea id="userInput" placeholder="Paste your flight data here..."></textarea>
     <input id="regInput" placeholder="Enter aircraft registration (e.g., MABJA)" />
-    <div class="buttons-group">
+    <div>
       <button onclick="formatDeparture()">DEPARTURE</button>
       <button onclick="formatArrival()">ARRIVAL</button>
       <button onclick="formatBoth()">BOTH</button>
@@ -110,17 +110,9 @@
         <option value="NEW">NEW SLOT</option>
         <option value="CANCEL">CANCEL SLOT</option>
       </select>
+      <button onclick="sendEmail()">SEND SCR EMAIL</button>
     </div>
-    <div id="departureContainer" class="output-container">
-      <div class="output-heading">Departure</div>
-      <pre id="departureOutput"></pre>
-      <button onclick="sendEmail('departureOutput')">SEND SCR EMAIL</button>
-    </div>
-    <div id="arrivalContainer" class="output-container">
-      <div class="output-heading">Arrival</div>
-      <pre id="arrivalOutput"></pre>
-      <button onclick="sendEmail('arrivalOutput')">SEND SCR EMAIL</button>
-    </div>
+    <div id="output" class="output"></div>
   </div>
 
   <script>
