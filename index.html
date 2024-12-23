@@ -89,6 +89,23 @@
   </div>
 
   <script>
+    let airportEmails = {}; // Store emails loaded from JSON
+
+    window.onload = function() {
+      loadEmailData(); // Ensure email data is loaded on page load
+    };
+
+    async function loadEmailData() {
+      try {
+        const response = await fetch('assets/emails.json'); // Correct path to your JSON file
+        airportEmails = await response.json();
+        console.log('Email data loaded:', airportEmails); // Debug loaded data
+      } catch (error) {
+        console.error('Error loading email data:', error);
+        alert('Failed to load email data. Email functionality may be limited.');
+      }
+    }
+    
     function getDayOfOperation(dayOfWeek) {
       const dayMapping = {
         'Sunday': '0000007',
@@ -264,54 +281,9 @@ ${arrivalSiLine}
       `;
     }
 
-    function sendEmail() {
-      const output = document.getElementById('output').textContent.trim();
-      if (!output) {
-        alert("No SCR message to send. Please format the message first.");
-        return;
-      }
-
-      const emailSubject = encodeURIComponent("SCR Message");
-      const emailBody = encodeURIComponent(output);
-      const recipientEmail = "recipient@example.com"; // Replace with actual email
-
-      // Construct mailto link
-      const mailtoLink = `mailto:${recipientEmail}?subject=${emailSubject}&body=${emailBody}`;
-      window.location.href = mailtoLink;
-    }
-     let airportEmails = {}; // Store emails loaded from JSON
-
-    // Load email data from JSON file
-    async function loadEmailData() {
-      try {
-        const response = await fetch('assets/emails.json'); // Ensure correct path to your JSON file
-        airportEmails = await response.json();
-        console.log('Email data loaded:', airportEmails); // Debug loaded data
-      } catch (error) {
-        console.error('Error loading email data:', error);
-        alert('Failed to load email data. Please check your JSON file.');
-      }
-    }
-
-    // Email SCR message
-    function emailSCR() {
-      const scrMessage = document.getElementById('output').textContent.trim();
-      const input = document.getElementById('userInput').value;
-      const data = parseInput(input);
-
-      if (!scrMessage) {
-        alert("No SCR message to email. Generate it first.");
-        return;
-      }
-
-      if (!data) {
-        alert("Invalid flight data format.");
-        return;
-      }
-
-      const airportCode = data.to.toUpperCase(); // Use 'to' field from parsed input
-      const airportInfo = airportEmails[airportCode]; // Retrieve info from loaded JSON
-      const ccEmail = "slotdesk@ryanair.com"; // Permanent CC email
+    const airportCode = data.to.toUpperCase();
+      const airportInfo = airportEmails[airportCode];
+      const ccEmail = "slotdesk@ryanair.com";
 
       if (!airportInfo || !airportInfo.email) {
         alert(`No email found for airport code: ${airportCode}`);
@@ -322,16 +294,9 @@ ${arrivalSiLine}
       const emailBody = encodeURIComponent(scrMessage);
       const recipientEmail = airportInfo.email;
 
-      // Construct mailto link
       const mailtoLink = `mailto:${recipientEmail}?cc=${ccEmail}&subject=${emailSubject}&body=${emailBody}`;
       window.location.href = mailtoLink;
     }
-
-    function parseInput(input) {
-      const parts = input.trim().split(' ');
-      if (parts.length !== 7) {
-        return null; // Invalid format
-      }
   </script>
 </body>
 </html>
