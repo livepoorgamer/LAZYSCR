@@ -105,51 +105,44 @@
 
     <!-- Separate containers for Departure and Arrival outputs -->
     <div id="departureContainer" class="output-container">
-      <div class="heading">Departure:</div>
+      <!-- Dynamically update the heading text here -->
+      <div class="heading" id="departureHeading">Departure:</div>
       <pre id="departureOutput"></pre>
       <button onclick="sendEmail('departure')">SEND SCR EMAIL (Departure)</button>
     </div>
 
     <div id="arrivalContainer" class="output-container">
-      <div class="heading">Arrival:</div>
+      <!-- Dynamically update the heading text here -->
+      <div class="heading" id="arrivalHeading">Arrival:</div>
       <pre id="arrivalOutput"></pre>
       <button onclick="sendEmail('arrival')">SEND SCR EMAIL (Arrival)</button>
     </div>
   </div>
 
   <script>
-    // -------------- PART 1: FETCH emails.json FROM GITHUB PAGES --------------
-    let airportData = {}; // We'll store the emails.json data here
+    // -------------- PART 1: (Optional) JSON Data Loading --------------
+    // If you're fetching emails.json from GitHub Pages, you'd do that here.
+    // For brevity, we won't include the full fetch logic in this snippet.
 
-    // Runs after DOM is loaded
-    window.addEventListener("DOMContentLoaded", () => {
-      // If your emails.json file is stored in the /assets folder of your repo,
-      // use the relative path "assets/emails.json"
-      fetch("assets/emails.json")
-        .then(response => response.json())
-        .then(data => {
-          airportData = data;
-          console.log("Loaded airport data:", airportData);
-        })
-        .catch(error => {
-          console.error("Error loading emails.json:", error);
-        });
-    });
+    // Let's just store a mock object for demonstration:
+    const airportData = {
+      "STN": { email: "stnslots@some-organization.org" },
+      "DUB": { email: "dubslots@some-organization.org" }
+      // etc...
+    };
 
-    // Helper function: get email by airport code
     function getAirportEmail(airportCode) {
       if (airportData[airportCode]) {
         return airportData[airportCode].email;
       }
-      return "default@example.com"; // fallback if airport code not found
+      return "default@example.com";
     }
 
-    // -------------- PART 2: EXISTING LOGIC / GLOBAL VARS --------------
-    let currentSlotType = "";           // e.g. "NEW SLOT" or "CANCEL SLOT"
-    let currentDepartureAirport = "";   // e.g. "STN"
-    let currentArrivalAirport = "";     // e.g. "DUB"
+    // -------------- PART 2: GLOBAL VARS --------------
+    let currentSlotType = "";           
+    let currentDepartureAirport = "";   
+    let currentArrivalAirport = "";     
 
-    // Maps day-of-week to operation code
     function getDayOfOperation(dayOfWeek) {
       const dayMapping = {
         "Sunday":    "0000007",
@@ -163,58 +156,41 @@
       return dayMapping[dayOfWeek] || "1000000"; 
     }
 
-    // Parse user input
     function parseInput(input) {
       const parts = input.trim().split(" ");
       if (parts.length !== 7) {
-        return null; // must have 7 parts
+        return null;
       }
       const flightRaw = parts[0];
       const from = parts[1];
       const to = parts[2];
-      const date = parts[3].slice(0, 5);  // e.g. "21DEC"
-      const fullDate = parts[3];         // e.g. "21DEC2024"
+      const date = parts[3].slice(0, 5);
+      const fullDate = parts[3];
       const departureTime = parts[4];
       const arrivalTime = parts[5];
       const code = parts[6];
 
-      // Convert date to dayOfWeek
       const parsedDate = new Date(fullDate);
       const dayOfWeek = parsedDate.toLocaleDateString("en-US", { weekday: "long" });
       const dayOfOperation = getDayOfOperation(dayOfWeek);
 
-      // Flight prefix + remove trailing 'P'
       const flightPrefix = flightRaw.slice(0, 2);
       let flightNumber = flightRaw.slice(2);
       const flightDigits = flightNumber.match(/\d+/)?.[0] || "";
       let flightLetters = flightNumber.replace(/\d+/g, "");
-
-      // If flightLetters ends with 'P', remove it
       if (flightLetters.endsWith("P")) {
         flightLetters = flightLetters.slice(0, -1);
       }
-
       const paddedFlightDigits = flightDigits.padStart(3, "0");
       const flight = `${flightPrefix}${paddedFlightDigits}${flightLetters}`;
 
-      return {
-        flight,
-        from,
-        to,
-        date,
-        fullDate,
-        departureTime,
-        arrivalTime,
-        code,
-        dayOfOperation
-      };
+      return { flight, from, to, date, fullDate, departureTime, arrivalTime, code, dayOfOperation };
     }
 
     function getSelectedOption() {
       return document.getElementById("dropdownMenu").value; // P, D, K, T, J
     }
 
-    // Returns "NEW SLOT" or "CANCEL SLOT"
     function getSlotType() {
       const val = document.getElementById("slotType").value;
       return val === "NEW" ? "NEW SLOT" : "CANCEL SLOT";
@@ -240,7 +216,6 @@
       }
     }
 
-    // Hide both output containers
     function hideAllContainers() {
       document.getElementById("departureContainer").style.display = "none";
       document.getElementById("arrivalContainer").style.display = "none";
@@ -248,7 +223,7 @@
       document.getElementById("arrivalOutput").textContent = "";
     }
 
-    // -------------- DEPARTURE FORMAT --------------
+    // -------------- DEPARTURE --------------
     function formatDeparture() {
       hideAllContainers();
 
@@ -259,18 +234,18 @@
         return;
       }
 
-      currentSlotType = getSlotType();          // "NEW SLOT" or "CANCEL SLOT"
-      currentDepartureAirport = data.from;      // for subject line (sendEmail)
+      currentSlotType = getSlotType();
+      currentDepartureAirport = data.from;
+
+      // Update heading to "Departure [XXX]"
+      document.getElementById("departureHeading").textContent = `Departure [${data.from}]`;
 
       const { flight, from, to, date, departureTime, dayOfOperation } = data;
-      const option = getSelectedOption();       // P, D, K, T, J
+      const option = getSelectedOption();
       const codePrefix = getCodePrefix(option);
       const reg = getAircraftReg();
 
-      // flightType
       const flightType = currentSlotType === "CANCEL SLOT" ? "D" : "N";
-
-      // e.g.: if option === "D", show reg in SI line
       const siLine =
         option === "D"
           ? `SI ${currentSlotType} REQ ${from} // LEARJET REG: ${reg}`
@@ -289,7 +264,7 @@ ${siLine}
       document.getElementById("departureContainer").style.display = "block";
     }
 
-    // -------------- ARRIVAL FORMAT --------------
+    // -------------- ARRIVAL --------------
     function formatArrival() {
       hideAllContainers();
 
@@ -301,7 +276,10 @@ ${siLine}
       }
 
       currentSlotType = getSlotType();
-      currentArrivalAirport = data.to; // for subject line (sendEmail)
+      currentArrivalAirport = data.to;
+
+      // Update heading to "Arrival [XXX]"
+      document.getElementById("arrivalHeading").textContent = `Arrival [${data.to}]`;
 
       const { flight, from, to, date, arrivalTime, dayOfOperation } = data;
       const option = getSelectedOption();
@@ -309,7 +287,6 @@ ${siLine}
       const reg = getAircraftReg();
 
       const flightType = currentSlotType === "CANCEL SLOT" ? "D" : "N";
-
       const siLine =
         option === "D"
           ? `SI ${currentSlotType} REQ ${to} // LEARJET REG: ${reg}`
@@ -328,7 +305,7 @@ ${siLine}
       document.getElementById("arrivalContainer").style.display = "block";
     }
 
-    // -------------- BOTH FORMAT --------------
+    // -------------- BOTH --------------
     function formatBoth() {
       hideAllContainers();
 
@@ -342,6 +319,10 @@ ${siLine}
       currentSlotType = getSlotType();
       currentDepartureAirport = data.from;
       currentArrivalAirport = data.to;
+
+      // Update headings
+      document.getElementById("departureHeading").textContent = `Departure [${data.from}]`;
+      document.getElementById("arrivalHeading").textContent = `Arrival [${data.to}]`;
 
       const { flight, from, to, date, departureTime, arrivalTime, dayOfOperation } = data;
       const option = getSelectedOption();
@@ -378,14 +359,13 @@ ${flightType}${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${from}
 ${arrivalSiLine}
       `.trim();
 
-      // Show both
       document.getElementById("departureOutput").textContent = departureOutputStr;
       document.getElementById("arrivalOutput").textContent = arrivalOutputStr;
       document.getElementById("departureContainer").style.display = "block";
       document.getElementById("arrivalContainer").style.display = "block";
     }
 
-    // -------------- PART 3: SEND EMAIL --------------
+    // -------------- SEND EMAIL --------------
     function sendEmail(type) {
       let output = "";
       let subject = "";
@@ -409,7 +389,7 @@ ${arrivalSiLine}
         subject = `${currentSlotType} REQ ${airportCode}`;
       }
 
-      // Primary recipient from JSON (based on airportCode)
+      // Primary recipient from JSON or fallback
       const recipientEmail = getAirportEmail(airportCode);
 
       // CC
