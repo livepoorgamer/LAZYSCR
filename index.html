@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Custom Flight Formatter</title>
   <style>
     body {
@@ -19,8 +19,7 @@
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    textarea,
-    input {
+    textarea, input {
       width: 100%;
       margin-bottom: 10px;
       padding: 10px;
@@ -62,7 +61,6 @@
       white-space: pre-wrap;
       font-family: monospace;
     }
-    /* Hide containers by default */
     #departureContainer,
     #arrivalContainer {
       display: none;
@@ -73,7 +71,7 @@
   <div class="container">
     <h1>Custom Flight Formatter</h1>
 
-    <!-- User inputs -->
+    <!-- Flight data + Registration -->
     <textarea id="userInput" placeholder="Paste your flight data here..."></textarea>
     <input id="regInput" placeholder="Enter aircraft registration (e.g., MABJA)" />
 
@@ -113,11 +111,7 @@
   </div>
 
   <script>
-    // Global variables to store relevant data
-    let currentSlotType = "";           // e.g. "NEW SLOT" or "CANCEL SLOT"
-    let currentDepartureAirport = "";   // e.g. "STN" (from)
-    let currentArrivalAirport = "";     // e.g. "XYZ" (to)
-
+    // Helper: maps day-of-week to operation code
     function getDayOfOperation(dayOfWeek) {
       const dayMapping = {
         Sunday: "0000007",
@@ -131,52 +125,44 @@
       return dayMapping[dayOfWeek] || "1000000"; 
     }
 
+    // Parse user input
     function parseInput(input) {
       const parts = input.trim().split(" ");
       if (parts.length !== 7) {
         return null; // Invalid format
       }
+
       const flightRaw = parts[0];
       const from = parts[1];
       const to = parts[2];
-      const date = parts[3].slice(0, 5); // e.g., "21DEC"
-      const fullDate = parts[3];         // e.g., "21DEC2024"
+      const date = parts[3].slice(0, 5);  // e.g. "21DEC"
+      const fullDate = parts[3];         // e.g. "21DEC2024"
       const departureTime = parts[4];
       const arrivalTime = parts[5];
       const code = parts[6];
 
-      // Convert date string to day of week
       const parsedDate = new Date(fullDate);
       const dayOfWeek = parsedDate.toLocaleDateString("en-US", { weekday: "long" });
       const dayOfOperation = getDayOfOperation(dayOfWeek);
 
-      // Flight number padding
-      const flightPrefix = flightRaw.slice(0, 2);
-      const flightNumber = flightRaw.slice(2);
+      // Pad flight number
+      const flightPrefix = flightRaw.slice(0, 2); 
+      const flightNumber = flightRaw.slice(2);    
       const flightDigits = flightNumber.match(/\d+/)?.[0] || "";
       const flightLetters = flightNumber.replace(/\d+/g, "");
       const paddedFlightDigits = flightDigits.padStart(3, "0");
       const flight = `${flightPrefix}${paddedFlightDigits}${flightLetters}`;
 
-      return {
-        flight,
-        from,
-        to,
-        date,
-        fullDate,
-        departureTime,
-        arrivalTime,
-        code,
-        dayOfOperation,
-      };
+      return { flight, from, to, date, fullDate, departureTime, arrivalTime, code, dayOfOperation };
     }
 
+    // Get dropdown values
     function getSelectedOption() {
       return document.getElementById("dropdownMenu").value; // P, D, K, T, J
     }
 
     function getSlotType() {
-      return document.getElementById("slotType").value; // "NEW SLOT" or "CANCEL SLOT"
+      return document.getElementById("slotType").value; // "NEW" or "CANCEL"
     }
 
     function getAircraftReg() {
@@ -184,6 +170,7 @@
       return regInput || "[UNKNOWN REG]";
     }
 
+    // Decide prefix based on selected option (P, D, K, T, J)
     function getCodePrefix(option) {
       switch (option) {
         case "P":
@@ -199,15 +186,15 @@
       }
     }
 
+    // Hide both containers before showing relevant content
     function hideAllContainers() {
       document.getElementById("departureContainer").style.display = "none";
       document.getElementById("arrivalContainer").style.display = "none";
-
-      // Clear out previous text
       document.getElementById("departureOutput").textContent = "";
       document.getElementById("arrivalOutput").textContent = "";
     }
 
+    // Format the DEPARTURE message
     function formatDeparture() {
       hideAllContainers();
 
@@ -218,23 +205,19 @@
         return;
       }
 
-      // Set global data
-      currentSlotType = getSlotType(); // e.g. "NEW SLOT"
-      currentDepartureAirport = data.from; // e.g. "STN"
-      // This is a departure flight, so we won't set currentArrivalAirport here
-
       const { flight, from, to, date, departureTime, dayOfOperation } = data;
-      const option = getSelectedOption();
-      const slotType = currentSlotType; // "NEW SLOT" or "CANCEL SLOT"
+      const option = getSelectedOption();   // P, D, K, T, J
+      const slotType = getSlotType();       // NEW or CANCEL
       const codePrefix = getCodePrefix(option);
       const reg = getAircraftReg();
 
-      const flightType = slotType === "CANCEL SLOT" ? "D" : "N";
+      // N if NEW SLOT, D if CANCEL SLOT
+      const flightType = slotType === "CANCEL" ? "D" : "N";
 
       const siLine =
         option === "D"
-          ? `SI ${slotType} REQ ${from} // LEARJET REG: ${reg}`
-          : `SI ${slotType} REQ ${from}`;
+          ? `SI ${slotType} SLOT REQ ${from} // LEARJET REG: ${reg}`
+          : `SI ${slotType} SLOT REQ ${from}`;
 
       const output = `
 SCR 
@@ -245,10 +228,12 @@ ${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${depa
 ${siLine}
       `.trim();
 
+      // Show the departure container
       document.getElementById("departureOutput").textContent = output;
       document.getElementById("departureContainer").style.display = "block";
     }
 
+    // Format the ARRIVAL message
     function formatArrival() {
       hideAllContainers();
 
@@ -259,22 +244,19 @@ ${siLine}
         return;
       }
 
-      // Set global data
-      currentSlotType = getSlotType();
-      currentArrivalAirport = data.to;
-
       const { flight, from, to, date, arrivalTime, dayOfOperation } = data;
       const option = getSelectedOption();
-      const slotType = currentSlotType;
+      const slotType = getSlotType();
       const codePrefix = getCodePrefix(option);
       const reg = getAircraftReg();
 
-      const flightType = slotType === "CANCEL SLOT" ? "D" : "N";
+      // N if NEW SLOT, D if CANCEL SLOT
+      const flightType = slotType === "CANCEL" ? "D" : "N";
 
       const siLine =
         option === "D"
-          ? `SI ${slotType} REQ ${to} // LEARJET REG: ${reg}`
-          : `SI ${slotType} REQ ${to}`;
+          ? `SI ${slotType} SLOT REQ ${to} // LEARJET REG: ${reg}`
+          : `SI ${slotType} SLOT REQ ${to}`;
 
       const output = `
 SCR 
@@ -285,10 +267,12 @@ ${flightType}${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${from}
 ${siLine}
       `.trim();
 
+      // Show the arrival container
       document.getElementById("arrivalOutput").textContent = output;
       document.getElementById("arrivalContainer").style.display = "block";
     }
 
+    // Format BOTH departure and arrival
     function formatBoth() {
       hideAllContainers();
 
@@ -299,24 +283,20 @@ ${siLine}
         return;
       }
 
-      // Set global data
-      currentSlotType = getSlotType();
-      currentDepartureAirport = data.from;
-      currentArrivalAirport = data.to;
-
       const { flight, from, to, date, departureTime, arrivalTime, dayOfOperation } = data;
       const option = getSelectedOption();
-      const slotType = currentSlotType;
+      const slotType = getSlotType();
       const codePrefix = getCodePrefix(option);
       const reg = getAircraftReg();
 
-      const flightType = slotType === "CANCEL SLOT" ? "D" : "N";
+      // N if NEW SLOT, D if CANCEL SLOT
+      const flightType = slotType === "CANCEL" ? "D" : "N";
 
-      // Departure
+      // DEPARTURE
       const departureSiLine =
         option === "D"
-          ? `SI ${slotType} REQ ${from} // LEARJET REG: ${reg}`
-          : `SI ${slotType} REQ ${from}`;
+          ? `SI ${slotType} SLOT REQ ${from} // LEARJET REG: ${reg}`
+          : `SI ${slotType} SLOT REQ ${from}`;
       const departureOutputStr = `
 SCR 
 W24 
@@ -326,11 +306,11 @@ ${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${depa
 ${departureSiLine}
       `.trim();
 
-      // Arrival
+      // ARRIVAL
       const arrivalSiLine =
         option === "D"
-          ? `SI ${slotType} REQ ${to} // LEARJET REG: ${reg}`
-          : `SI ${slotType} REQ ${to}`;
+          ? `SI ${slotType} SLOT REQ ${to} // LEARJET REG: ${reg}`
+          : `SI ${slotType} SLOT REQ ${to}`;
       const arrivalOutputStr = `
 SCR 
 W24 
@@ -340,26 +320,20 @@ ${flightType}${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${from}
 ${arrivalSiLine}
       `.trim();
 
+      // Show both containers
       document.getElementById("departureOutput").textContent = departureOutputStr;
       document.getElementById("arrivalOutput").textContent = arrivalOutputStr;
       document.getElementById("departureContainer").style.display = "block";
       document.getElementById("arrivalContainer").style.display = "block";
     }
 
-    // Send an email for either "departure" or "arrival"
+    // Send email for either "departure" or "arrival"
     function sendEmail(type) {
       let output = "";
-      let subject = "";
-
-      // Decide whether we're sending the departure or arrival message
       if (type === "departure") {
         output = document.getElementById("departureOutput").textContent.trim();
-        // e.g. "NEW SLOT REQ STN" or "CANCEL SLOT REQ STN"
-        subject = `${currentSlotType} SLOT REQ ${currentDepartureAirport}`;
       } else if (type === "arrival") {
         output = document.getElementById("arrivalOutput").textContent.trim();
-        // e.g. "NEW SLOT REQ XYZ" or "CANCEL SLOT REQ XYZ"
-        subject = `${currentSlotType} SLOT REQ ${currentArrivalAirport}`;
       }
 
       if (!output) {
@@ -367,14 +341,22 @@ ${arrivalSiLine}
         return;
       }
 
+      // Customize subject
+      const slotType = getSlotType(); // e.g. "NEW" or "CANCEL"
+      let subject = slotType === "CANCEL" ? "CANCEL SLOT REQ" : "NEW SLOT REQ";
+
+      // If you want to attach an airport code to the subject, 
+      // you can parse it from the output or store it in a global variable.
+
+      // Email recipients
+      const recipientEmail = "recipient@example.com"; // main recipient
+      const ccEmail = "slotdesk@ryanair.com";         // CC
+
       const emailSubject = encodeURIComponent(subject);
       const emailBody = encodeURIComponent(output);
-      const recipientEmail = "recipient@example.com";// Replace with actual email
-      const ccEmail = "slotdesk@ryanair.com";
-      
-      // Construct mailto link
+
       const mailtoLink = `mailto:${recipientEmail}?cc=${ccEmail}&subject=${emailSubject}&body=${emailBody}`;
-    window.location.href = mailtoLink;
+      window.location.href = mailtoLink;
     }
   </script>
 </body>
