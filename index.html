@@ -262,6 +262,10 @@
       currentSlotType = getSlotType();          // "NEW SLOT" or "CANCEL SLOT"
       currentDepartureAirport = data.from;      // for subject line (sendEmail)
 
+       // Update headings
+      document.getElementById("departureHeading").textContent = `Departure [${data.from}]`;
+      document.getElementById("arrivalHeading").textContent = `Arrival [${data.to}]`;
+
       const { flight, from, to, date, departureTime, dayOfOperation } = data;
       const option = getSelectedOption();       // P, D, K, T, J
       const codePrefix = getCodePrefix(option);
