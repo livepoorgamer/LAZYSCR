@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Custom Flight Formatter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    textarea, input, select {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      resize: vertical;
+    }
+    button {
+      padding: 10px 15px;
+      margin-right: 10px;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    select {
+      padding: 10px;
+      margin-left: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    .heading {
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    .output-container {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f9f9f9;
+      border: 1px dashed #ccc;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+    #departureContainer,
+    #arrivalContainer,
+    #massCancellationContainer {
+      display: none; /* Hide containers initially */
+    }
+      .mass-airport-container {
+      margin-top: 20px;
+      border: 1px solid #28a745;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .mass-airport-header {
+      background-color: #28a745;
+      color: #fff;
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .mass-airport-header:hover {
+      background-color: #1e7e34;
+    }
+    .mass-airport-content {
+      display: none;
+      padding: 10px;
+      background-color: #f1f1f1;
+    }
+    .mass-airport-header .toggle-button::after {
+      content: '▼';
+      margin-left: 10px;
+      transition: transform 0.3s ease;
+    }
+    .mass-airport-header.collapsed .toggle-button::after {
+      transform: rotate(-90deg);
+    }
+    pre {
+      background-color: #e9ecef;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Custom Flight Formatter</h1>
+
+    <!-- Existing Headings -->
+    <h2 id="departureHeading"></h2>
+    <h2 id="arrivalHeading"></h2>
+
+    <!-- User Inputs -->
+    <textarea 
+      id="userInput" 
+      placeholder="Enter one or multiple entries, each on a new line: FLIGHT FROM TO DDMMMYYYY DEP ARR CODE (7 parts)">
+    </textarea>
+    <input id="regInput" placeholder="Enter aircraft registration (e.g., MABJA)" />
+
+    <!-- Action Buttons and Dropdowns -->
+    <div>
+      <button onclick="formatDeparture()">DEPARTURE</button>
+      <button onclick="formatArrival()">ARRIVAL</button>
+      <button onclick="formatBoth()">BOTH</button>
+      <button onclick="processMassCancellations()">Process Mass Cancellations</button>
+
+      <!-- Dropdown with tooltips -->
+      <select id="dropdownMenu">
+        <option value="P" title="Non-revenue flight">P</option>
+        <option value="D" title="General Aviation">D</option>
+        <option value="K" title="Training flight">K</option>
+        <option value="T" title="Training flight">T</option>
+        <option value="J" title="Revenue (passenger)">J</option>
+      </select>
+
+      <!-- Slot Type: NEW or CANCEL -->
+      <select id="slotType">
+        <option value="NEW">NEW SLOT</option>
+        <option value="CANCEL">CANCEL SLOT</option>
+      </select>
+    </div>
+
+    <!-- Output Containers -->
+    <div id="departureContainer" class="output-container">
+      <div class="heading">Departure:</div>
+      <pre id="departureOutput"></pre>
+      <button onclick="sendEmail('departure')">SEND SCR EMAIL (Departure)</button>
+    </div>
+
+    <div id="arrivalContainer" class="output-container">
+      <div class="heading">Arrival:</div>
+      <pre id="arrivalOutput"></pre>
+      <button onclick="sendEmail('arrival')">SEND SCR EMAIL (Arrival)</button>
+    </div>
+
+    <!-- Mass Cancellations Output Container -->
+    <div id="massCancellationContainer">
+      <!-- Dynamic Mass Cancellation Airport Containers will be added here -->
+    </div>
+  </div>
+
+  <script>
+    // -------------- PART 1: FETCH emails.json FROM GITHUB PAGES --------------
+    let airportData = {}; // We'll store the emails.json data here
+
+    // Runs after DOM is loaded
+    window.addEventListener("DOMContentLoaded", () => {
+      // If your emails.json file is stored in the /assets folder of your repo,
+      // use the relative path "assets/emails.json"
+      fetch("assets/emails.json")
+        .then(response => response.json())
+        .then(data => {
+          airportData = data;
+          console.log("Loaded airport data:", airportData);
+        })
+        .catch(error => {
+          console.error("Error loading emails.json:", error);
+        });
+    });
+
+    // Helper function: get email by airport code
+    function getAirportEmail(airportCode) {
+      if (airportData[airportCode]) {
+        return airportData[airportCode].email;
+      }
+      return "default@example.com"; // fallback if airport code not found
+    }
+
+    // -------------- PART 2: EXISTING LOGIC / GLOBAL VARS --------------
+    let currentSlotType = "";           // e.g. "NEW SLOT" or "CANCEL SLOT"
+    let currentDepartureAirport = "";   // e.g. "STN"
+    let currentArrivalAirport = "";     // e.g. "DUB"
+
+    // Maps day-of-week to operation code
+    function getDayOfOperation(dayOfWeek) {
+      const dayMapping = {
+        "Sunday":    "0000007",
+        "Monday":    "1000000",
+        "Tuesday":   "0200000",
+        "Wednesday": "0030000",
+        "Thursday":  "0004000",
+        "Friday":    "0000500",
+        "Saturday":  "0000060"
+      };
+      return dayMapping[dayOfWeek] || "1000000"; 
+    }
+
+    // Parse user input
+    function parseInput(input) {
+      const parts = input.trim().split(" ");
+      if (parts.length !== 7) {
+        return null; // must have 7 parts
+      }
+      const flightRaw = parts[0];
+      const from = parts[1];
+      const to = parts[2];
+      const date = parts[3].slice(0, 5);  // e.g. "29DEC"
+      const fullDate = parts[3];         // e.g. "29DEC2024"
+      const departureTime = parts[4];
+      const arrivalTime = parts[5];
+      const code = parts[6];
+
+      // Convert date to dayOfWeek
+      const formattedDateStr = fullDate.replace(/(\d{2})([A-Z]{3})(\d{4})/, '$1 $2 $3');
+      const parsedDate = new Date(formattedDateStr);
+      if (isNaN(parsedDate)) {
+        alert("Error: Invalid date format. Please use DDMMMYYYY (e.g., 29DEC2024).");
+        return null;
+      }
+      const dayOfWeek = parsedDate.toLocaleDateString("en-US", { weekday: "long" });
+      const dayOfOperation = getDayOfOperation(dayOfWeek);
+
+      // Flight prefix + remove trailing 'P'
+      const flightPrefix = flightRaw.slice(0, 2);
+      let flightNumber = flightRaw.slice(2);
+      const flightDigits = flightNumber.match(/\d+/)?.[0] || "";
+      let flightLetters = flightNumber.replace(/\d+/g, "");
+
+      // If flightLetters ends with 'P', remove it
+      if (flightLetters.endsWith("P")) {
+        flightLetters = flightLetters.slice(0, -1);
+      }
+
+      const paddedFlightDigits = flightDigits.padStart(4, "0"); // Adjusted to pad to 4 digits if needed
+      const flight = `${flightPrefix}${paddedFlightDigits}${flightLetters}`;
+
+      return {
+        flight,
+        from,
+        to,
+        date,
+        fullDate,
+        departureTime,
+        arrivalTime,
+        code,
+        dayOfOperation
+      };
+    }
+
+    function getSelectedOption() {
+      return document.getElementById("dropdownMenu").value; // P, D, K, T, J
+    }
+
+    // Returns "NEW SLOT" or "CANCEL SLOT"
+    function getSlotType() {
+      const val = document.getElementById("slotType").value;
+      return val === "NEW" ? "NEW SLOT" : "CANCEL SLOT";
+    }
+
+    function getAircraftReg() {
+      const regInput = document.getElementById("regInput").value.trim();
+      return regInput || "[UNKNOWN REG]";
+    }
+
+    function getCodePrefix(option) {
+      switch (option) {
+        case "P":
+        case "T":
+        case "K":
+          return "000";
+        case "J":
+          return "189";
+        case "D":
+          return "008";
+        default:
+          return "000";
+      }
+    }
+
+    // Hide all single flight output containers
+    function hideAllContainers() {
+      document.getElementById("departureContainer").style.display = "none";
+      document.getElementById("arrivalContainer").style.display = "none";
+      document.getElementById("departureOutput").textContent = "";
+      document.getElementById("arrivalOutput").textContent = "";
+    }
+
+    // -------------- DEPARTURE FORMAT --------------
+    function formatDeparture() {
+      hideAllContainers();
+
+      const input = document.getElementById("userInput").value.trim();
+      const data = parseInput(input);
+      if (!data) {
+        alert("Error: Invalid input format. Make sure you have 7 parts.");
+        return;
+      }
+
+      currentSlotType = getSlotType();          // "NEW SLOT" or "CANCEL SLOT"
+      currentDepartureAirport = data.from;      // for subject line (sendEmail)
+
+      // Update headings (avoid error by ensuring these elements exist)
+      document.getElementById("departureHeading").textContent = `Departure [${data.from}]`;
+      document.getElementById("arrivalHeading").textContent = `Arrival [${data.to}]`;
+
+      const { flight, from, to, date, departureTime, dayOfOperation } = data;
+      const option = getSelectedOption();       // P, D, K, T, J
+      const codePrefix = getCodePrefix(option);
+      const reg = getAircraftReg();
+
+      // flightType
+      const flightType = currentSlotType === "CANCEL SLOT" ? "D" : "N";
+
+      // e.g.: if option === "D", show reg in SI line
+      const siLine =
+        option === "D"
+          ? `SI ${currentSlotType} REQ ${from} // LEARJET REG: ${reg}`
+          : `SI ${currentSlotType} REQ ${from}`;
+
+      // Corrected single date usage
+      const output = `
+SCR 
+W24 
+${date} 
+${from} 
+${flightType} ${flight} ${date} ${dayOfOperation} ${codePrefix}73H ${departureTime}${to} ${option} 
+${siLine}
+      `.trim();
+
+      document.getElementById("departureOutput").textContent = output;
+      document.getElementById("departureContainer").style.display = "block";
+    }
+
+    // -------------- ARRIVAL FORMAT --------------
+    function formatArrival() {
+      hideAllContainers();
+
+      const input = document.getElementById("userInput").value.trim();
+      const data = parseInput(input);
+      if (!data) {
+        alert("Error: Invalid input format. Make sure you have 7 parts.");
+        return;
+      }
+
+      currentSlotType = getSlotType();
+      currentArrivalAirport = data.to; // for subject line (sendEmail)
+
+      // Optional heading update
+      document.getElementById("departureHeading").textContent = `Departure [${data.from}]`;
+      document.getElementById("arrivalHeading").textContent = `Arrival [${data.to}]`;
+
+      const { flight, from, to, date, arrivalTime, dayOfOperation } = data;
+      const option = getSelectedOption();
+      const codePrefix = getCodePrefix(option);
+      const reg = getAircraftReg();
+
+      const flightType = currentSlotType === "CANCEL SLOT" ? "D" : "N";
+
+      const siLine =
+        option === "D"
+          ? `SI ${currentSlotType} REQ ${to} // LEARJET REG: ${reg}`
+          : `SI ${currentSlotType} REQ ${to}`;
+
+      // Corrected single date usage
+      const output = `
+SCR 
+W24 
+${date} 
+${to} 
+${flightType}${flight} ${date} ${dayOfOperation} ${codePrefix}73H ${from}${arrivalTime} ${option} 
+${siLine}
+      `.trim();
+
+      document.getElementById("arrivalOutput").textContent = output;
+      document.getElementById("arrivalContainer").style.display = "block";
+    }
+
+    // -------------- BOTH FORMAT --------------
+    function formatBoth() {
+      hideAllContainers();
+
+      const input = document.getElementById("userInput").value.trim();
+      const data = parseInput(input);
+      if (!data) {
+        alert("Error: Invalid input format. Make sure you have 7 parts.");
+        return;
+      }
+
+      currentSlotType = getSlotType();
+      currentDepartureAirport = data.from;
+      currentArrivalAirport = data.to;
+
+      // Optional heading update
+      document.getElementById("departureHeading").textContent = `Departure [${data.from}]`;
+      document.getElementById("arrivalHeading").textContent = `Arrival [${data.to}]`;
+
+      const { flight, from, to, date, departureTime, arrivalTime, dayOfOperation } = data;
+      const option = getSelectedOption();
+      const codePrefix = getCodePrefix(option);
+      const reg = getAircraftReg();
+
+      const flightType = currentSlotType === "CANCEL SLOT" ? "D" : "N";
+
+      // DEPARTURE
+      const departureSiLine =
+        option === "D"
+          ? `SI ${currentSlotType} REQ ${from} // LEARJET REG: ${reg}`
+          : `SI ${currentSlotType} REQ ${from}`;
+      const departureOutputStr = `
+SCR 
+W24 
+${date} 
+${from} 
+${flightType} ${flight} ${date} ${dayOfOperation} ${codePrefix}73H ${departureTime}${to} ${option} 
+${departureSiLine}
+      `.trim();
+
+      // ARRIVAL
+      const arrivalSiLine =
+        option === "D"
+          ? `SI ${currentSlotType} REQ ${to} // LEARJET REG: ${reg}`
+          : `SI ${currentSlotType} REQ ${to}`;
+      const arrivalOutputStr = `
+SCR 
+W24 
+${date} 
+${to} 
+${flightType}${flight} ${date} ${dayOfOperation} ${codePrefix}73H ${from}${arrivalTime} ${option} 
+${arrivalSiLine}
+      `.trim();
+
+      // Show both
+      document.getElementById("departureOutput").textContent = departureOutputStr;
+      document.getElementById("arrivalOutput").textContent = arrivalOutputStr;
+      document.getElementById("departureContainer").style.display = "block";
+      document.getElementById("arrivalContainer").style.display = "block";
+    }
+
+    // -------------- PART 3: SEND EMAIL --------------
+    function sendEmail(type) {
+      let output = "";
+      let subject = "";
+      let airportCode = "";
+
+      if (type === "departure") {
+        output = document.getElementById("departureOutput").textContent.trim();
+        if (!output) {
+          alert("No DEPARTURE SCR message found. Please format again.");
+          return;
+        }
+        airportCode = currentDepartureAirport;
+        subject = `${currentSlotType} REQ ${airportCode}`;
+      } else {
+        output = document.getElementById("arrivalOutput").textContent.trim();
+        if (!output) {
+          alert("No ARRIVAL SCR message found. Please format again.");
+          return;
+        }
+        airportCode = currentArrivalAirport;
+        subject = `${currentSlotType} REQ ${airportCode}`;
+      }
+
+      // Primary recipient from JSON (based on airportCode)
+      const recipientEmail = getAirportEmail(airportCode);
+
+      // CC
+      const ccEmail = "slotdesk@ryanair.com";
+
+      // Build mailto link
+      const emailSubject = encodeURIComponent(subject);
+      const emailBody = encodeURIComponent(output);
+      const mailtoLink = `mailto:${recipientEmail}?cc=${ccEmail}&subject=${emailSubject}&body=${emailBody}`;
+
+      // Trigger email
+      window.location.href = mailtoLink;
+    }
+
+    // -------------- MASS CANCELLATIONS FUNCTIONALITY --------------
+
+    // Function to process mass cancellations
+    function processMassCancellations() {
+      const input = document.getElementById("userInput").value.trim();
+      const reg = getAircraftReg();
+      const option = getSelectedOption();
+      const slotType = getSlotType(); // Assuming all mass cancellations have the same slot type
+
+      if (!input) {
+        alert("Please enter at least one cancellation entry.");
+        return;
+      }
+
+      const lines = input.split("\n").filter(line => line.trim() !== "");
+      if (lines.length === 0) {
+        alert("Please enter valid cancellation entries.");
+        return;
+      }
+
+      const airportMessages = {}; // Group messages by airport code
+
+      lines.forEach((line, index) => {
+        const data = parseInput(line);
+        if (!data) {
+          alert(`Error in line ${index + 1}: Invalid input format.`);
+          return;
+        }
+
+        const { flight, from, to, date, departureTime, arrivalTime, dayOfOperation } = data;
+        const codePrefix = getCodePrefix(option);
+        const flightType = slotType === "CANCEL SLOT" ? "D" : "N";
+
+        // Construct departure flight entry
+        const departureEntry = `${flightType} ${flight} ${date} ${dayOfOperation} ${codePrefix}73H ${departureTime}${to} ${option}`;
+
+        // Construct arrival flight entry
+        const arrivalEntry = `${flightType} ${flight} ${date} ${dayOfOperation} ${codePrefix}73H ${from}${arrivalTime} ${option}`;
+
+        // Initialize airport codes in airportMessages
+        if (!airportMessages[from]) {
+          airportMessages[from] = {
+            departures: [],
+            arrivals: [],
+            slotType: slotType
+          };
+        }
+        if (!airportMessages[to]) {
+          airportMessages[to] = {
+            departures: [],
+            arrivals: [],
+            slotType: slotType
+          };
+        }
+
+        // Add entries to respective airports
+        airportMessages[from].departures.push(departureEntry);
+        airportMessages[to].arrivals.push(arrivalEntry);
+      });
+
+      // Display the grouped SCR messages
+      displayMassCancellations(airportMessages);
+    }
+
+    // Function to display mass cancellations grouped by airport
+    function displayMassCancellations(airportMessages) {
+      const massContainer = document.getElementById("massCancellationContainer");
+      massContainer.innerHTML = ""; // Clear previous mass cancellations
+
+      for (const [airportCode, details] of Object.entries(airportMessages)) {
+        const { departures, arrivals, slotType } = details;
+
+        // Create airport container
+        const airportDiv = document.createElement("div");
+        airportDiv.className = "mass-airport-container";
+
+        // Airport header with expand/collapse
+        const headerDiv = document.createElement("div");
+        headerDiv.className = "mass-airport-header collapsed";
+        headerDiv.innerHTML = `
+          <span>${airportCode} (${(departures.length + arrivals.length)} SCR Message${(departures.length + arrivals.length) > 1 ? 's' : ''})</span>
+          <button class="toggle-button" style="background:none; border:none; color:#fff; font-size:16px; cursor:pointer;">Toggle</button>
+        `;
+        airportDiv.appendChild(headerDiv);
+
+        // Airport content
+        const contentDiv = document.createElement("div");
+        contentDiv.className = "mass-airport-content";
+
+        // SCR Header
+        const scrHeader = document.createElement("pre");
+        scrHeader.textContent = `SCR 
+W24 
+${details.departures[0]?.split(' ')[2] || details.arrivals[0]?.split(' ')[2]} 
+${airportCode}`;
+        contentDiv.appendChild(scrHeader);
+
+        // List all departure entries
+        if (departures.length > 0) {
+          departures.forEach(departureEntry => {
+            const pre = document.createElement("pre");
+            pre.textContent = departureEntry;
+            contentDiv.appendChild(pre);
+          });
+        }
+
+        // List all arrival entries
+        if (arrivals.length > 0) {
+          arrivals.forEach(arrivalEntry => {
+            const pre = document.createElement("pre");
+            pre.textContent = arrivalEntry;
+            contentDiv.appendChild(pre);
+          });
+        }
+
+        // SI Line (only once per airport)
+        const siLine = document.createElement("pre");
+        siLine.textContent = `SI ${slotType} REQ ${airportCode}`;
+        contentDiv.appendChild(siLine);
+
+        // Email button
+        const emailButton = document.createElement("button");
+        emailButton.textContent = `SEND SCR EMAIL (${airportCode})`;
+        emailButton.style.marginTop = "10px";
+        emailButton.onclick = () => sendMassEmail(airportCode, departures, arrivals, slotType);
+        contentDiv.appendChild(emailButton);
+
+        airportDiv.appendChild(contentDiv);
+        massContainer.appendChild(airportDiv);
+
+        // Add event listener for expand/collapse
+        headerDiv.addEventListener("click", () => {
+          const isVisible = contentDiv.style.display === "block";
+          contentDiv.style.display = isVisible ? "none" : "block";
+          headerDiv.classList.toggle("collapsed", isVisible);
+        });
+      }
+
+      if (Object.keys(airportMessages).length > 0) {
+        massContainer.style.display = "block";
+      } else {
+        massContainer.style.display = "none";
+      }
+    }
+
+    // Function to send mass email for a specific airport
+    function sendMassEmail(airportCode, departures, arrivals, slotType) {
+      if (!airportCode || (departures.length === 0 && arrivals.length === 0)) {
+        alert("No SCR messages found for this airport.");
+        return;
+      }
+
+      // Primary recipient from JSON (based on airportCode)
+      const recipientEmail = getAirportEmail(airportCode);
+
+      // CC
+      const ccEmail = "slotdesk@ryanair.com";
+
+      // Subject: Use slot type directly since all entries share the same type
+      const subject = `${slotType} REQ ${airportCode}`;
+
+      // Construct email body
+      let emailBody = `SCR 
+W24 
+${airportCode}\n\n`;
+
+      // Add departures
+      departures.forEach(departureEntry => {
+        emailBody += `${departureEntry}\n`;
+      });
+
+      // Add arrivals
+      arrivals.forEach(arrivalEntry => {
+        emailBody += `${arrivalEntry}\n`;
+      });
+
+      emailBody += `\nSI ${slotType} REQ ${airportCode}`;
+
+      // Build mailto link
+      const emailSubject = encodeURIComponent(subject);
+      const encodedBody = encodeURIComponent(emailBody);
+      const mailtoLink = `mailto:${recipientEmail}?cc=${ccEmail}&subject=${emailSubject}&body=${encodedBody}`;
+
+      // Trigger email
+      window.location.href = mailtoLink;
+    }
+  </script>
+</body>
+</html>
