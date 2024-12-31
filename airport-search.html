@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Realtime Airport Database</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: #eaeaea;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin: 20px 0;
+      color: #00d4ff;
+      text-shadow: 0 0 15px #00d4ff, 0 0 30px #0077ff;
+    }
+    h2 {
+      font-size: 1.8rem;
+      color: #ffffff;
+      margin: 20px 0 10px;
+    }
+    .result-header {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+    }
+    .levels {
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    .levels span {
+      margin: 0 10px;
+    }
+    .levels .summer {
+      color: #f0c000; /* Golden/Orange for "Summer" */
+    }
+    .levels .winter {
+      color: #66c2ff; /* Light blue for "Winter" */
+    }
+    .levels .gcr {
+      color: #ff6b6b; /* Reddish for "GCR" */
+    }
+    .levels .ppr {
+      color: #6bff6b; /* Greenish for "PPR" */
+    }
+    .airport-info-title {
+      font-size: 1.2rem;
+      margin-top: 20px;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    .airport-info {
+      margin: 10px auto;
+      text-align: left;
+      max-width: 500px;
+      line-height: 1.4em;
+      white-space: pre-wrap; /* preserve line breaks */
+    }
+
+    /* Existing form styles below */
+    input, textarea, button {
+      margin: 10px 0;
+      padding: 15px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 500px;
+      box-sizing: border-box;
+    }
+    input, textarea {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.2);
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #00d4ff;
+      box-shadow: 0 0 8px #00d4ff;
+    }
+    button {
+      background: linear-gradient(135deg, #00d4ff, #0077ff);
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(0, 123, 255, 0.3);
+    }
+    pre {
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      color: #00d4ff;
+      font-family: 'Courier New', Courier, monospace;
+      border-radius: 10px;
+      text-align: left;
+      max-width: 500px;
+      margin: 20px auto;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-size: 1rem;
+      text-align: left;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* New Styles for Add/Edit Buttons and Form */
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    #airportForm {
+      display: none; /* Hidden by default */
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Airport Database</h1>
+
+  <div class="container">
+    <!-- Search Section -->
+    <h2>Search for an Airport</h2>
+    <input type="text" id="airportCode" placeholder="Enter Airport Code (e.g., ABZ, ACE)">
+    <button id="fetchAirportBtn">Fetch Airport Data</button>
+
+    <h2>Result:</h2>
+    <!-- Styled result display -->
+    <div id="responseOutput">No data yet...</div>
+
+    <!-- Action Buttons for Add/Edit -->
+    <h2>Add or Edit Airport</h2>
+    <div class="action-buttons">
+      <button id="addAirportBtn">Add New Airport</button>
+      <button id="editAirportBtn">Edit Existing Airport</button>
+    </div>
+
+    <!-- Add/Edit Form -->
+    <div id="airportForm">
+      <h2 id="formTitle">Add/Edit Airport</h2>
+      <label for="editAirportCode">Airport Code:</label>
+      <input type="text" id="editAirportCode" placeholder="e.g., ABZ">
+
+      <label for="country">Country:</label>
+      <input type="text" id="country" placeholder="e.g., United Kingdom">
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" placeholder="e.g., info@airport.com">
+
+      <label for="contactNumber">Contact Number:</label>
+      <input type="text" id="contactNumber" placeholder="e.g., +44 123 456 789">
+
+      <label for="gcr">GCR:</label>
+      <input type="text" id="gcr" placeholder="e.g., YES or NO">
+
+      <label for="ppr">PPR:</label>
+      <input type="text" id="ppr" placeholder="e.g., YES or NO">
+
+      <label for="summerLevel">Summer Level:</label>
+      <input type="text" id="summerLevel" placeholder="e.g., 2">
+
+      <label for="winterLevel">Winter Level:</label>
+      <input type="text" id="winterLevel" placeholder="e.g., 2">
+
+      <label for="additionalInformation">Additional Information:</label>
+      <textarea id="additionalInformation" placeholder="Enter any additional information"></textarea>
+
+      <button id="saveAirportBtn">Save Airport Data</button>
+    </div>
+  </div>
+
+  <footer>
+    © 2024 Realtime Airport Database - K.B
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getDatabase, ref, get, set, child } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCIefgXMj...",
+      authDomain: "airportsearch-d151a.firebaseapp.com",
+      databaseURL: "https://airportsearch-d151a-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "airportsearch-d151a",
+      storageBucket: "airportsearch-d151a.appspot.com",
+      messagingSenderId: "686237913756",
+      appId: "1:686237913756:web:adb3b64de1dbc0fef39359"
+    };
+
+    // Initialize Firebase and Realtime Database
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // DOM Elements
+    const airportCodeInput = document.getElementById('airportCode');
+    const fetchAirportBtn = document.getElementById('fetchAirportBtn');
+    const responseOutput = document.getElementById('responseOutput');
+    const saveAirportBtn = document.getElementById('saveAirportBtn');
+
+    const addAirportBtn = document.getElementById('addAirportBtn');
+    const editAirportBtn = document.getElementById('editAirportBtn');
+    const airportForm = document.getElementById('airportForm');
+    const formTitle = document.getElementById('formTitle');
+
+    const editAirportCode = document.getElementById('editAirportCode');
+    const country = document.getElementById('country');
+    const email = document.getElementById('email');
+    const contactNumber = document.getElementById('contactNumber');
+    const gcr = document.getElementById('gcr');
+    const ppr = document.getElementById('ppr');
+    const summerLevel = document.getElementById('summerLevel');
+    const winterLevel = document.getElementById('winterLevel');
+    const additionalInformation = document.getElementById('additionalInformation');
+
+    // State to determine if adding or editing
+    let isEditing = false;
+
+    // Variable to store current airport data
+    let currentAirportData = null;
+
+    // Event Listeners for Add and Edit Buttons
+    addAirportBtn.addEventListener('click', () => {
+      isEditing = false;
+      formTitle.textContent = "Add New Airport";
+      clearForm();
+      airportForm.style.display = 'block';
+    });
+
+    editAirportBtn.addEventListener('click', () => {
+      if (!currentAirportData) {
+        alert("Please search and fetch an airport first before editing.");
+        return;
+      }
+      isEditing = true;
+      formTitle.textContent = "Edit Existing Airport";
+      populateForm(currentAirportData);
+      airportForm.style.display = 'block';
+    });
+
+    // Function to clear the form fields
+    function clearForm() {
+      editAirportCode.value = '';
+      country.value = '';
+      email.value = '';
+      contactNumber.value = '';
+      gcr.value = '';
+      ppr.value = '';
+      summerLevel.value = '';
+      winterLevel.value = '';
+      additionalInformation.value = '';
+    }
+
+    // Function to populate the form with existing data
+    function populateForm(airport) {
+      editAirportCode.value = airport.airportName || '';
+      country.value = airport.country || '';
+      email.value = airport.email || '';
+      contactNumber.value = airport.contactNumber || '';
+      gcr.value = airport.gcr || '';
+      ppr.value = airport.ppr || '';
+      summerLevel.value = airport.summerLevel || '';
+      winterLevel.value = airport.winterLevel || '';
+      additionalInformation.value = airport.additionalInformation || '';
+    }
+
+    async function fetchAirportData() {
+      const code = airportCodeInput.value.trim().toUpperCase();
+      if (!code) {
+        responseOutput.textContent = "Please enter a valid airport code.";
+        return;
+      }
+
+      try {
+        const dbRef = ref(db);
+        const snapshot = await get(child(dbRef, code));
+
+        if (!snapshot.exists()) {
+          responseOutput.textContent = `No matching airport found for code: ${code}`;
+          currentAirportData = null;
+          return;
+        }
+
+        // Retrieve the data
+        const airport = snapshot.val();
+        currentAirportData = { ...airport, code: code }; // Store the code as well
+
+        // Display in a styled format
+        responseOutput.innerHTML = `
+          <div class="result-header">
+            <strong>${airport.airportName}</strong> – ${airport.country}
+          </div>
+          <div class="levels">
+            <span class="summer">Summer: Level ${airport.summerLevel || '-'}</span>
+            <span class="winter">Winter: Level ${airport.winterLevel || '-'}</span>
+            <span class="gcr">GCR: ${airport.gcr || 'No'}</span>
+            <span class="ppr">PPR: ${airport.ppr || 'No'}</span>
+          </div>
+          <div class="airport-info-title">Airport Info</div>
+          <div class="airport-info">
+            ${airport.additionalInformation || 'No additional information available.'}
+          </div>
+        `;
+
+        // Store the current airport data for editing
+        currentAirportData = { ...airport, code: code };
+
+        // Optionally, you can auto-populate the form fields even if not editing
+        // Uncomment the following line if desired:
+        // populateForm(currentAirportData);
+
+      } catch (error) {
+        responseOutput.textContent = "Error: " + error.message;
+        currentAirportData = null;
+      }
+    }
+
+    async function saveAirportData() {
+      const code = editAirportCode.value.trim().toUpperCase();
+      if (!code) {
+        alert("Please enter an airport code.");
+        return;
+      }
+
+      const airportData = {
+        airportName: code,
+        country: country.value.trim(),
+        email: email.value.trim(),
+        contactNumber: contactNumber.value.trim(),
+        gcr: gcr.value.trim(),
+        ppr: ppr.value.trim(),
+        summerLevel: summerLevel.value.trim(),
+        winterLevel: winterLevel.value.trim(),
+        additionalInformation: additionalInformation.value.trim()
+      };
+
+      try {
+        const dbRef = ref(db, code);
+        await set(dbRef, airportData);
+        alert(`Airport data for ${code} has been saved successfully.`);
+        airportForm.style.display = 'none'; // Hide form after saving
+
+        // If adding a new airport, clear the current data
+        if (!isEditing) {
+          currentAirportData = null;
+        } else {
+          // If editing, update the current data
+          currentAirportData = { ...airportData, code: code };
+          // Optionally, refresh the displayed result
+          responseOutput.innerHTML = `
+            <div class="result-header">
+              <strong>${airportData.airportName}</strong> – ${airportData.country}
+            </div>
+            <div class="levels">
+              <span class="summer">Summer: Level ${airportData.summerLevel || '-'}</span>
+              <span class="winter">Winter: Level ${airportData.winterLevel || '-'}</span>
+              <span class="gcr">GCR: ${airportData.gcr || 'No'}</span>
+              <span class="ppr">PPR: ${airportData.ppr || 'No'}</span>
+            </div>
+            <div class="airport-info-title">Airport Info</div>
+            <div class="airport-info">
+              ${airportData.additionalInformation || 'No additional information available.'}
+            </div>
+          `;
+        }
+      } catch (error) {
+        alert("Error saving data: " + error.message);
+      }
+    }
+
+    fetchAirportBtn.addEventListener('click', fetchAirportData);
+    saveAirportBtn.addEventListener('click', saveAirportData);
+  </script>
+</body>
+</html>
