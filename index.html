@@ -11,12 +11,40 @@
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 0; /* Changed to 0 to accommodate nav padding */
       background-color: #f4f4f4;
     }
+    /* ----------------------------
+       NAVIGATION STYLING
+    ----------------------------- */
+    nav {
+      background-color: #333;
+      padding: 10px 20px;
+    }
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+    }
+    nav li {
+      margin-right: 20px;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 16px;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #ddd;
+    }
+    /* ----------------------------
+       CONTAINER STYLING
+    ----------------------------- */
     .container {
       max-width: 600px;
-      margin: 0 auto;
+      margin: 20px auto; /* Added top margin to separate from nav */
       padding: 20px;
       background: #fff;
       border-radius: 8px;
@@ -71,6 +99,17 @@
   </style>
 </head>
 <body>
+  <!-- ----------------------------
+         NAVIGATION BAR
+  ----------------------------- -->
+  <nav>
+    <ul>
+      <li><a href="flight-formatter.html">Home</a></li>
+      <li><a href="airport-search.html">Airport Search</a></li>
+      <!-- Add more navigation links here if needed -->
+    </ul>
+  </nav>
+  
   <div class="container">
     <h1>Custom Flight Formatter</h1>
 
