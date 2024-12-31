@@ -4,28 +4,49 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Custom Flight Formatter</title>
+  
+  <!-- Google Fonts: Orbitron for futuristic headings, Roboto Mono for monospaced output -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" 
+    rel="stylesheet"
+  >
+
   <style>
     /* ----------------------------
        BASIC STYLING
     ----------------------------- */
     body {
-      font-family: Arial, sans-serif;
+      /* Futuristic, gradient background */
+      background: linear-gradient(135deg, #131313 0%, #323232 100%);
       margin: 0;
-      padding: 0; /* Changed to 0 to accommodate nav padding */
-      background-color: #f4f4f4;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif; /* Headings/futuristic text */
+      color: #fff; /* White text on dark background */
     }
+
+    /* Smooth transitions for hover effects, etc. */
+    * {
+      transition: all 0.2s ease-in-out;
+    }
+
     /* ----------------------------
        NAVIGATION STYLING
     ----------------------------- */
     nav {
-      background-color: #333;
+      background: #1B1B1B; /* Dark nav bar */
       padding: 10px 20px;
+      border-bottom: 2px solid #00FFD1; /* A futuristic accent color */
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
     }
     nav ul {
       list-style: none;
       margin: 0;
       padding: 0;
       display: flex;
+      justify-content: flex-start;
+      align-items: center;
     }
     nav li {
       margin-right: 20px;
@@ -34,67 +55,116 @@
       color: #fff;
       text-decoration: none;
       font-size: 16px;
-      transition: color 0.3s;
     }
     nav a:hover {
-      color: #ddd;
+      color: #00FFD1;
+      text-shadow: 0 0 5px #00FFD1;
     }
+
     /* ----------------------------
        CONTAINER STYLING
     ----------------------------- */
     .container {
       max-width: 600px;
-      margin: 20px auto; /* Added top margin to separate from nav */
+      margin: 40px auto; 
       padding: 20px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background: #1F1F1F;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.2); /* Slight neon glow */
     }
+    .container h1 {
+      text-transform: uppercase;
+      text-align: center;
+      color: #00FFD1;
+      text-shadow: 0 0 8px rgba(0, 255, 209, 0.7);
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    .container h2 {
+      color: #00FFD1;
+      text-shadow: 0 0 5px rgba(0, 255, 209, 0.7);
+      margin-bottom: 20px;
+    }
+
+    /* ----------------------------
+       INPUTS & BUTTONS
+    ----------------------------- */
     textarea, input {
       width: 100%;
       margin-bottom: 10px;
       padding: 10px;
-      border: 1px solid #ccc;
+      background: #2E2E2E;
+      color: #FFF;
+      border: 1px solid #444;
       border-radius: 4px;
+      font-family: 'Roboto Mono', monospace;
       font-size: 14px;
+      outline: none;
       resize: vertical;
     }
+    textarea::placeholder, 
+    input::placeholder {
+      color: #aaa;
+    }
     button {
-      padding: 10px 15px;
-      margin-right: 10px;
-      background-color: #007BFF;
+      padding: 10px 20px;
+      margin: 5px 10px 5px 0;
+      background: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
       color: #fff;
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 14px;
+      text-transform: uppercase;
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0);
     }
     button:hover {
-      background-color: #0056b3;
+      transform: scale(1.05);
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
     }
+
     select {
       padding: 10px;
-      margin-left: 10px;
-      border: 1px solid #ccc;
+      margin: 5px 10px 5px 0;
+      border: 1px solid #444;
       border-radius: 4px;
-      font-size: 16px;
+      background: #2E2E2E;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      text-transform: uppercase;
     }
-    .heading {
-      font-weight: bold;
-      margin-top: 20px;
+    select:hover {
+      box-shadow: 0 0 6px rgba(0, 255, 209, 0.5);
     }
+
+    /* ----------------------------
+       OUTPUT BOX
+    ----------------------------- */
     .output-container {
       margin-top: 20px;
-      padding: 10px;
-      background: #f9f9f9;
-      border: 1px dashed #ccc;
+      padding: 20px;
+      background: #101010;
+      border: 1px dashed #00FFD1;
       border-radius: 4px;
       white-space: pre-wrap;
-      font-family: monospace;
+      font-family: 'Roboto Mono', monospace;
+      color: #00FFD1;
+      line-height: 1.5;
     }
+    .heading {
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      color: #00FFD1;
+    }
+
+    /* Hide by default */
     #departureContainer,
     #arrivalContainer {
-      display: none; /* Hide containers initially */
+      display: none;
     }
   </style>
 </head>
@@ -110,6 +180,9 @@
     </ul>
   </nav>
   
+  <!-- ----------------------------
+         MAIN CONTAINER
+  ----------------------------- -->
   <div class="container">
     <h1>Custom Flight Formatter</h1>
 
@@ -121,15 +194,17 @@
     <!-- User inputs -->
     <textarea 
       id="userInput" 
-      placeholder="Format: FLIGHT FROM TO DDMMMYYYY DEP ARR CODE (7 parts)">
-    </textarea>
-    <input id="regInput" placeholder="Enter aircraft registration (e.g., MABJA)" />
+      placeholder="Format: FLIGHT FROM TO DDMMMYYYY DEP ARR CODE (7 parts)"></textarea>
+
+    <input 
+      id="regInput" 
+      placeholder="Enter aircraft registration (e.g., MABJA)" />
 
     <!-- Action buttons and dropdowns -->
     <div>
-      <button onclick="formatDeparture()">DEPARTURE</button>
-      <button onclick="formatArrival()">ARRIVAL</button>
-      <button onclick="formatBoth()">BOTH</button>
+      <button onclick="formatDeparture()">Departure</button>
+      <button onclick="formatArrival()">Arrival</button>
+      <button onclick="formatBoth()">Both</button>
 
       <!-- Dropdown with tooltips -->
       <select id="dropdownMenu">
@@ -151,16 +226,19 @@
     <div id="departureContainer" class="output-container">
       <div class="heading">Departure:</div>
       <pre id="departureOutput"></pre>
-      <button onclick="sendEmail('departure')">SEND SCR EMAIL (Departure)</button>
+      <button onclick="sendEmail('departure')">Send SCR Email (Departure)</button>
     </div>
 
     <div id="arrivalContainer" class="output-container">
       <div class="heading">Arrival:</div>
       <pre id="arrivalOutput"></pre>
-      <button onclick="sendEmail('arrival')">SEND SCR EMAIL (Arrival)</button>
+      <button onclick="sendEmail('arrival')">Send SCR Email (Arrival)</button>
     </div>
   </div>
 
+  <!-- ----------------------------
+         JAVASCRIPT
+  ----------------------------- -->
   <script>
     // -------------- PART 1: FETCH emails.json FROM GITHUB PAGES --------------
     let airportData = {}; // We'll store the emails.json data here
@@ -324,7 +402,7 @@
           ? `SI ${currentSlotType} REQ ${from} // LEARJET REG: ${reg}`
           : `SI ${currentSlotType} REQ ${from}`;
 
-      // Notice this uses `${date}${date}` — you may want to fix that if it's unintentional.
+      // Notice the double `${date}` below may need to be refined if unintentional
       const output = `
 SCR 
 W24 
@@ -368,7 +446,6 @@ ${siLine}
           ? `SI ${currentSlotType} REQ ${to} // LEARJET REG: ${reg}`
           : `SI ${currentSlotType} REQ ${to}`;
 
-      // Again, note the `${date}${date}` — adjust if needed
       const output = `
 SCR 
 W24 
