@@ -449,11 +449,11 @@
 
         // Departure SCR
         const departureOutput = `
-SCR 
-W24 
-${date} 
-${from} 
-${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${departureTime}${to} ${option} 
+SCR
+W24
+${date}
+${from}
+${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${departureTime}${to} ${option}
 ${siLine}
         `.trim();
 
@@ -465,11 +465,11 @@ ${siLine}
 
         // Arrival SCR
         const arrivalOutput = `
-SCR 
-W24 
-${date} 
-${to} 
-${flightType}${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${from}${arrivalTime} ${option} 
+SCR
+W24
+${date}
+${to}
+${flightType}${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${from}${arrivalTime} ${option}
 ${siLineArrival}
         `.trim();
 
@@ -561,7 +561,7 @@ ${siLineArrival}
 
       // Build mailto link
       const emailSubject = encodeURIComponent(subject);
-      const emailBody = encodeURIComponent(output.replace(/\n/g, "%0A"));
+      const emailBody = encodeURIComponent(output); // Removed .replace(/\n/g, "%0A")
       const mailtoLink = `mailto:${recipientEmail}?cc=${ccEmail}&subject=${emailSubject}&body=${emailBody}`;
 
       // Trigger email in a new tab/window
@@ -587,7 +587,7 @@ ${siLineArrival}
         const subjectDep = `${currentSlotType} REQ ${from}`;
         const recipientDep = getAirportEmail(from);
         const emailSubjectDep = encodeURIComponent(subjectDep);
-        const emailBodyDep = encodeURIComponent(departureOutput.replace(/\n/g, "%0A"));
+        const emailBodyDep = encodeURIComponent(departureOutput); // Removed .replace(/\n/g, "%0A")
         const mailtoLinkDep = `mailto:${recipientDep}?cc=slotdesk@ryanair.com&subject=${emailSubjectDep}&body=${emailBodyDep}`;
 
         // Send Arrival Email
@@ -596,7 +596,7 @@ ${siLineArrival}
         const subjectArr = `${currentSlotType} REQ ${to}`;
         const recipientArr = getAirportEmail(to);
         const emailSubjectArr = encodeURIComponent(subjectArr);
-        const emailBodyArr = encodeURIComponent(arrivalOutput.replace(/\n/g, "%0A"));
+        const emailBodyArr = encodeURIComponent(arrivalOutput); // Removed .replace(/\n/g, "%0A")
         const mailtoLinkArr = `mailto:${recipientArr}?cc=slotdesk@ryanair.com&subject=${emailSubjectArr}&body=${emailBodyArr}`;
 
         // Open mailto links sequentially with a slight delay to prevent overwhelming the email client
