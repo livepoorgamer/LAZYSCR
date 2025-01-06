@@ -120,6 +120,15 @@
       font-size: 16px;
     }
 
+    /* Disclaimer Styling */
+    .disclaimer {
+      color: #FF0000;
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 14px;
+    }
+
     /* Responsive Design */
     @media (max-width: 600px) {
       .container {
@@ -145,19 +154,27 @@
     <!-- User input -->
     <textarea 
       id="userInput" 
+      aria-label="Flight Input" 
       placeholder="Enter input in the format: FLIGHT_NUM DEPARTURE_IATA ARRIVAL_IATA DATE DEPARTURE_TIME ARRIVAL_TIME REG"></textarea>
 
     <!-- Slot Code Input -->
     <input 
       type="text" 
       id="slotCode" 
+      aria-label="Slot Code" 
       placeholder="Enter Slot Code (e.g., 008L45)">
+    
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      DISCLAIMER: PLEASE CHECK DETAILS ARE CORRECT BEFORE SENDING
+    </div>
     
     <!-- Action buttons -->
     <div>
       <button onclick="formatDeparture()">Format Departure</button>
       <button onclick="formatArrival()">Format Arrival</button>
-      <button onclick="formatBoth()">Format Both</button>
+      <!-- You can uncomment the line below if you wish to include the "Format Both" button -->
+      <!-- <button onclick="formatBoth()">Format Both</button> -->
     </div>
 
     <!-- Departure Output -->
@@ -251,24 +268,24 @@
       };
     }
 
-    function buildDepartureGcr(reg, date, slotCode, departureTime, toIata, flightType, slotType) {
+    function buildDepartureGcr(reg, date, slotCode, departureTime, toIcao, flightType, slotType) {
       // Construct the flight line for departure
       // Format: N MABEU 06JAN 008L45 0945VIE D
-      const flightLine = `N ${reg} ${date} ${slotCode} ${departureTime}${toIata} ${flightType}`;
+      const flightLine = `N ${reg} ${date} ${slotCode} ${departureTime}${toIcao} ${flightType}`;
 
       return `GCR
 /REG
-LOWW
+${toIcao}
 
 ${flightLine}
 
 GI ${slotType} REQ LOWW PPR / SLOT ID NUMBERS PLS`.trim();
     }
 
-    function buildArrivalGcr(reg, date, slotCode, arrivalTime, toIcao, flightType, slotType) {
+    function buildArrivalGcr(reg, date, slotCode, arrivalTime, depIcao, flightType, slotType) {
       // Construct the flight line for arrival
       // Format: NMABEU 06JAN 008L45 LOWW1125 D
-      const flightLine = `N${reg} ${date} ${slotCode} ${toIcao}${arrivalTime} ${flightType}`;
+      const flightLine = `N${reg} ${date} ${slotCode} ${depIcao}${arrivalTime} ${flightType}`;
 
       return `GCR
 /REG
@@ -291,7 +308,7 @@ GI ${slotType} REQ LOWW PPR / SLOT ID NUMBERS PLS`.trim();
       if (!data) return;
 
       const { reg, date, departureTime, to, slotCode } = data;
-      const toIata = to; // Arrival IATA code
+      const toIcao = getIcaoCode(to); // Arrival ICAO code
 
       // Construct the departure GCR output
       const departureOutputStr = buildDepartureGcr(
@@ -299,7 +316,7 @@ GI ${slotType} REQ LOWW PPR / SLOT ID NUMBERS PLS`.trim();
         date,
         slotCode,
         departureTime,
-        toIata,
+        toIcao,
         "D", // Departure
         getSlotType()
       );
@@ -315,7 +332,7 @@ GI ${slotType} REQ LOWW PPR / SLOT ID NUMBERS PLS`.trim();
       if (!data) return;
 
       const { reg, date, arrivalTime, from, slotCode } = data;
-      const toIcao = getIcaoCode(from); // Departure IATA code converted to ICAO
+      const depIcao = getIcaoCode(from); // Departure ICAO code
 
       // Construct the arrival GCR output
       const arrivalOutputStr = buildArrivalGcr(
@@ -323,7 +340,7 @@ GI ${slotType} REQ LOWW PPR / SLOT ID NUMBERS PLS`.trim();
         date,
         slotCode,
         arrivalTime,
-        toIcao,
+        depIcao,
         "D", // Arrival (using 'D' as per user specification)
         getSlotType()
       );
