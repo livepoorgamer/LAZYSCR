@@ -1279,6 +1279,16 @@
         "gcr": "NO",
         "ppr": "NO"
     },
+    "NUE": {
+        "airportName": "NUE",
+        "country": "Germany",
+        "email": "fraztxh@fluko.org",
+        "contactNumber": "Not Available",
+        "summerLevel": "2",
+        "winterLevel": "2",
+        "gcr": "NO",
+        "ppr": "NO"
+    },
     "NCL": {
         "airportName": "NCL",
         "country": "United Kingdom",
