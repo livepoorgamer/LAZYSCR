@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GCR Formatter</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" 
+    rel="stylesheet"
+  >
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #131313 0%, #323232 100%);
+      margin: 0;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+    }
+
+    * {
+      transition: all 0.2s ease-in-out;
+    }
+
+    nav {
+      background: #1B1B1B;
+      padding: 10px 20px;
+      border-bottom: 2px solid #00FFD1;
+    }
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+    nav li {
+      margin-right: 20px;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #1F1F1F;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.2);
+    }
+
+    textarea, input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #2E2E2E;
+      color: #FFF;
+      border: 1px solid #444;
+      border-radius: 4px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 5px 10px 5px 0;
+      background: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0);
+    }
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
+    }
+
+    .output-container {
+      margin-top: 20px;
+      padding: 20px;
+      background: #101010;
+      border: 1px dashed #00FFD1;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      font-family: 'Roboto Mono', monospace;
+      color: #00FFD1;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="#">GCR Formatter</a></li>
+    </ul>
+  </nav>
+  
+  <div class="container">
+    <h1>GCR Formatter</h1>
+
+    <!-- User input -->
+    <textarea 
+      id="userInput" 
+      placeholder="Enter input in the format: FLIGHT_NUM DEPARTURE_IATA ARRIVAL_IATA DATE DEPARTURE_TIME ARRIVAL_TIME REG"></textarea>
+
+    <!-- Action buttons -->
+    <div>
+      <button onclick="formatDeparture()">Format Departure</button>
+      <button onclick="formatArrival()">Format Arrival</button>
+      <button onclick="formatBoth()">Format Both</button>
+    </div>
+
+    <!-- Departure Output -->
+    <div id="departureContainer" class="output-container" style="display: none;">
+      <div class="heading">Departure:</div>
+      <pre id="departureOutput"></pre>
+    </div>
+
+    <!-- Arrival Output -->
+    <div id="arrivalContainer" class="output-container" style="display: none;">
+      <div class="heading">Arrival:</div>
+      <pre id="arrivalOutput"></pre>
+    </div>
+  </div>
+
+  <script>
+    const iataToIcao = {
+      ZAG: "LDZA",
+      VIE: "LOWW",
+      STN: "EGSS",
+      DUB: "EIDW",
+      LHR: "EGLL",
+      JFK: "KJFK",
+      LAX: "KLAX",
+      // Add more IATA-to-ICAO mappings as needed
+    };
+
+    function getIcaoCode(iataCode) {
+      return iataToIcao[iataCode] || iataCode;
+    }
+
+    function parseInput(input) {
+      const parts = input.trim().split(" ");
+      if (parts.length !== 7) {
+        alert("Error: Input must have exactly 7 parts. Example: FR2C ZAG VIE 06JAN2025 0530 0620 MABGV");
+        return null;
+      }
+
+      return {
+        flight: parts[0],
+        from: parts[1],
+        to: parts[2],
+        date: parts[3].slice(0, 5),
+        fullDate: parts[3],
+        departureTime: parts[4],
+        arrivalTime: parts[5],
+        reg: parts[6],
+      };
+    }
+
+    function buildGcrOutput(reg, depIcao, flight, date, code, time, arrIcao, flightType, slotType) {
+      return `
+GCR
+/${reg}
+${depIcao} 
+${flight} ${date} ${code} ${time}${arrIcao} ${flightType}
+
+GI ${slotType} REQ ${depIcao} PPR / SLOT ID NUMBERS PLS
+      `.trim();
+    }
+
+    function getSlotType() {
+      return "NEW"; // Default to NEW SLOT for now
+    }
+
+    function formatDeparture() {
+      const input = document.getElementById("userInput").value;
+      const data = parseInput(input);
+      if (!data) return;
+
+      const { flight, from, to, date, departureTime, reg } = data;
+      const departureIcao = getIcaoCode(from);
+      const arrivalIcao = getIcaoCode(to);
+
+      const departureOutputStr = buildGcrOutput(
+        reg,
+        departureIcao,
+        `N ${flight}`,
+        date,
+        "008L45",
+        departureTime,
+        arrivalIcao,
+        "D",
+        getSlotType()
+      );
+
+      document.getElementById("departureOutput").textContent = departureOutputStr;
+      document.getElementById("departureContainer").style.display = "block";
+    }
+
+    function formatArrival() {
+      const input = document.getElementById("userInput").value;
+      const data = parseInput(input);
+      if (!data) return;
+
+      const { flight, from, to, date, arrivalTime, reg } = data;
+      const departureIcao = getIcaoCode(from);
+      const arrivalIcao = getIcaoCode(to);
+
+      const arrivalOutputStr = buildGcrOutput(
+        reg,
+        departureIcao,
+        flight,
+        date,
+        "008L45",
+        arrivalTime,
+        arrivalIcao,
+        "D",
+        getSlotType()
+      );
+
+      document.getElementById("arrivalOutput").textContent = arrivalOutputStr;
+      document.getElementById("arrivalContainer").style.display = "block";
+    }
+
+    function formatBoth() {
+      formatDeparture();
+      formatArrival();
+    }
+
+    function hideAllContainers() {
+      document.getElementById("departureContainer").style.display = "none";
+      document.getElementById("arrivalContainer").style.display = "none";
+      document.getElementById("departureOutput").textContent = "";
+      document.getElementById("arrivalOutput").textContent = "";
+    }
+  </script>
+</body>
+</html>
