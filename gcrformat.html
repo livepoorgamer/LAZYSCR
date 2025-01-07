@@ -98,7 +98,7 @@
       position: relative;
     }
 
-    .copy-button {
+    .copy-button, .download-button {
       position: absolute;
       top: 10px;
       right: 10px;
@@ -110,7 +110,7 @@
       font-size: 12px;
       color: #fff;
     }
-    .copy-button:hover {
+    .copy-button:hover, .download-button:hover {
       background: #0056b3;
     }
 
@@ -118,6 +118,30 @@
       font-weight: 700;
       margin-bottom: 10px;
       font-size: 16px;
+    }
+
+    /* Error Message Styling */
+    .error-message {
+      color: #FF0000;
+      font-size: 12px;
+      display: none;
+    }
+    .error {
+      display: block;
+    }
+
+    /* Toast Notification Styling */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #333;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 4px;
+      opacity: 0.9;
+      transition: opacity 0.5s ease;
+      z-index: 1000;
     }
 
     /* Disclaimer Styling */
@@ -138,6 +162,10 @@
         width: 100%;
         margin-bottom: 10px;
       }
+      .copy-button, .download-button {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
     }
   </style>
 </head>
@@ -152,18 +180,35 @@
     <h1>GCR Formatter</h1>
 
     <!-- User input -->
-    <textarea 
-      id="userInput" 
-      aria-label="Flight Input" 
-      placeholder="Enter input in the format: FLIGHT_NUM DEPARTURE_IATA ARRIVAL_IATA DATE DEPARTURE_TIME ARRIVAL_TIME REG"></textarea>
+    <div>
+      <textarea 
+        id="userInput" 
+        aria-label="Flight Input" 
+        placeholder="Enter input in the format: FLIGHT_NUM DEPARTURE_IATA ARRIVAL_IATA DATE DEPARTURE_TIME ARRIVAL_TIME REG"></textarea>
+      <span id="userInputError" class="error-message"></span>
+    </div>
 
     <!-- Slot Code Input -->
-    <input 
-      type="text" 
-      id="slotCode" 
-      aria-label="Slot Code" 
-      placeholder="Enter Slot Code (e.g., 008L45)">
+    <div>
+      <input 
+        type="text" 
+        id="slotCode" 
+        aria-label="Slot Code" 
+        placeholder="Enter Slot Code (e.g., 008L45)">
+      <span id="slotCodeError" class="error-message"></span>
+    </div>
     
+    <!-- Slot Type Selection -->
+    <div>
+      <label for="slotType">Slot Type:</label>
+      <select id="slotType">
+        <option value="NEW">New Slot</option>
+        <option value="MOD">Modified Slot</option>
+        <option value="CXL">Cancelled Slot</option>
+        <!-- Add more options as needed -->
+      </select>
+    </div>
+
     <!-- Disclaimer -->
     <div class="disclaimer">
       DISCLAIMER: PLEASE CHECK DETAILS ARE CORRECT BEFORE SENDING
@@ -171,95 +216,87 @@
     
     <!-- Action buttons -->
     <div>
-      <button onclick="formatDeparture()">Format Departure</button>
-      <button onclick="formatArrival()">Format Arrival</button>
-      <!-- You can uncomment the line below if you wish to include the "Format Both" button -->
-      <!-- <button onclick="formatBoth()">Format Both</button> -->
+      <button onclick="formatGcr()">Format GCR</button>
+      <button onclick="downloadGcr('gcrOutput')">Download GCR</button>
     </div>
 
-    <!-- Departure Output -->
-    <div id="departureContainer" class="output-container" style="display: none;">
-      <button class="copy-button" onclick="copyToClipboard('departureOutput')">Copy</button>
-      <div class="heading">Departure:</div>
-      <pre id="departureOutput"></pre>
-    </div>
-
-    <!-- Arrival Output -->
-    <div id="arrivalContainer" class="output-container" style="display: none;">
-      <button class="copy-button" onclick="copyToClipboard('arrivalOutput')">Copy</button>
-      <div class="heading">Arrival:</div>
-      <pre id="arrivalOutput"></pre>
+    <!-- Combined GCR Output -->
+    <div id="gcrContainer" class="output-container" style="display: none;">
+      <button class="copy-button" onclick="copyToClipboard('gcrOutput')">Copy</button>
+      <div class="heading">GCR:</div>
+      <pre id="gcrOutput"></pre>
     </div>
   </div>
 
   <script>
     const iataToIcao = {
-      ZAG: "LDZA", // Zagreb Airport
-      VIE: "LOWW", // Vienna International Airport
       STN: "EGSS", // London Stansted Airport
-      DUB: "EIDW", // Dublin Airport
-      LHR: "EGLL", // London Heathrow Airport
-      JFK: "KJFK", // John F. Kennedy International Airport
-      LAX: "KLAX", // Los Angeles International Airport
-      AMS: "EHAM", // Amsterdam Schiphol Airport
-      CDG: "LFPG", // Paris Charles de Gaulle Airport
-      FRA: "EDDF", // Frankfurt Airport
-      MAD: "LEMD", // Adolfo Suárez Madrid–Barajas Airport
-      BCN: "LEBL", // Barcelona–El Prat Airport
-      OTP: "LROP", // Henri Coandă International Airport, Bucharest
-      MUC: "EDDM", // Munich Airport
-      SYD: "YSSY", // Sydney Kingsford Smith Airport
-      HND: "RJTT", // Tokyo Haneda Airport
+      PMI: "LEPA", // Palma de Mallorca Airport
+      VIE: "LOWW", // Vienna International Airport
       // Add more IATA-to-ICAO mappings as needed
     };
-
+    
     function getIcaoCode(iataCode) {
       return iataToIcao[iataCode.toUpperCase()] || iataCode.toUpperCase();
     }
-
+    
     function parseInput(input) {
       const parts = input.trim().split(/\s+/);
+      const userInputError = document.getElementById("userInputError");
+      const slotCodeError = document.getElementById("slotCodeError");
+      
+      // Reset error messages
+      userInputError.textContent = "";
+      userInputError.classList.remove("error");
+      slotCodeError.textContent = "";
+      slotCodeError.classList.remove("error");
+    
       if (parts.length !== 7) {
-        alert("Error: Input must have exactly 7 parts.\nExample: FR2C ZAG VIE 06JAN2025 0945 1125 MABEU");
+        userInputError.textContent = "Input must have exactly 7 parts.";
+        userInputError.classList.add("error");
         return null;
       }
-
+    
       const [flight, from, to, fullDate, departureTime, arrivalTime, reg] = parts;
-
+    
       // Validate IATA codes (3 uppercase letters)
       const iataRegex = /^[A-Z]{3}$/;
       if (!iataRegex.test(from) || !iataRegex.test(to)) {
-        alert("Error: Departure and Arrival IATA codes must be three uppercase letters.");
+        userInputError.textContent = "Departure and Arrival IATA codes must be three uppercase letters.";
+        userInputError.classList.add("error");
         return null;
       }
-
+    
       // Validate date (DDMMMYYYY)
       const dateRegex = /^\d{2}[A-Z]{3}\d{4}$/;
       if (!dateRegex.test(fullDate)) {
-        alert("Error: Date must be in the format DDMMMYYYY (e.g., 06JAN2025).");
+        userInputError.textContent = "Date must be in the format DDMMMYYYY (e.g., 29DEC2025).";
+        userInputError.classList.add("error");
         return null;
       }
-
+    
       // Validate time (HHMM)
       const timeRegex = /^\d{4}$/;
       if (!timeRegex.test(departureTime) || !timeRegex.test(arrivalTime)) {
-        alert("Error: Departure and Arrival times must be in HHMM format.");
+        userInputError.textContent = "Departure and Arrival times must be in HHMM format.";
+        userInputError.classList.add("error");
         return null;
       }
-
+    
       // Validate Slot Code
       const slotCodeInput = document.getElementById("slotCode").value.trim();
       const slotCodeRegex = /^[A-Z0-9]{6}$/; // Example: 008L45
       if (!slotCodeRegex.test(slotCodeInput)) {
-        alert("Error: Slot Code must be 6 characters long, alphanumeric (e.g., 008L45).");
+        slotCodeError.textContent = "Slot Code must be 6 characters long, alphanumeric (e.g., 008L45).";
+        slotCodeError.classList.add("error");
         return null;
       }
-
+    
       return {
-        flight: flight.toUpperCase(), // Not used in output
+        flight: flight.toUpperCase(),
         from: from.toUpperCase(),
         to: to.toUpperCase(),
-        date: fullDate.slice(0, 5).toUpperCase(), // e.g., "06JAN"
+        date: fullDate.slice(0, 5).toUpperCase(), // e.g., "29DEC"
         fullDate: fullDate.toUpperCase(),
         departureTime,
         arrivalTime,
@@ -267,105 +304,75 @@
         slotCode: slotCodeInput.toUpperCase(),
       };
     }
-
-    function buildDepartureGcr(reg, date, slotCode, departureTime, toIcao, flightType, slotType) {
-      // Construct the flight line for departure
-      // Format: N MABEU 06JAN 008L45 0945VIE D
-      const flightLine = `N ${reg} ${date} ${slotCode} ${departureTime}${toIcao} ${flightType}`;
-
+    
+    function buildGcr(data) {
+      const { reg, date, slotCode, departureTime, arrivalTime, from, to } = data;
+      const departureIcao = getIcaoCode(from);
+      const arrivalIcao = getIcaoCode(to);
+      const slotType = getSlotType();
+    
+      // Construct flight lines
+      const flightLine2 = `N ${reg} ${date} ${slotCode} ${departureTime}${arrivalIcao} D`;
+      const flightLine1 = `N${reg} ${date} ${slotCode} ${arrivalIcao}${arrivalTime} D`;
+      
+    
       return `GCR
 /REG
-${toIcao}
-
-${flightLine}
-
-GI ${slotType} REQ LOWW PPR / SLOT ID NUMBERS PLS`.trim();
+${departureIcao}
+${flightLine2}
+${flightLine1}
+GI ${slotType} REQ ${departureIcao} PPR / SLOT ID NUMBERS PLS`.trim();
     }
-
-    function buildArrivalGcr(reg, date, slotCode, arrivalTime, depIcao, flightType, slotType) {
-      // Construct the flight line for arrival
-      // Format: NMABEU 06JAN 008L45 LOWW1125 D
-      const flightLine = `N${reg} ${date} ${slotCode} ${depIcao}${arrivalTime} ${flightType}`;
-
-      return `GCR
-/REG
-LOWW
-
-${flightLine}
-
-GI ${slotType} REQ LOWW PPR / SLOT ID NUMBERS PLS`.trim();
-    }
-
+    
     function getSlotType() {
-      // You can enhance this function to determine slot type based on additional logic or user input
-      return "NEW"; // Default to NEW SLOT for now
+      // Enhanced to get slot type from user selection
+      const slotTypeSelect = document.getElementById("slotType");
+      return slotTypeSelect ? slotTypeSelect.value : "NEW";
     }
-
-    function formatDeparture() {
+    
+    function formatGcr() {
       hideAllContainers(); // Clear previous outputs
       const input = document.getElementById("userInput").value;
       const data = parseInput(input);
       if (!data) return;
-
-      const { reg, date, departureTime, to, slotCode } = data;
-      const toIcao = getIcaoCode(to); // Arrival ICAO code
-
-      // Construct the departure GCR output
-      const departureOutputStr = buildDepartureGcr(
-        reg,
-        date,
-        slotCode,
-        departureTime,
-        toIcao,
-        "D", // Departure
-        getSlotType()
-      );
-
-      document.getElementById("departureOutput").textContent = departureOutputStr;
-      document.getElementById("departureContainer").style.display = "block";
+    
+      const gcrOutputStr = buildGcr(data);
+    
+      document.getElementById("gcrOutput").textContent = gcrOutputStr;
+      document.getElementById("gcrContainer").style.display = "block";
     }
-
-    function formatArrival() {
-      hideAllContainers(); // Clear previous outputs
-      const input = document.getElementById("userInput").value;
-      const data = parseInput(input);
-      if (!data) return;
-
-      const { reg, date, arrivalTime, from, slotCode } = data;
-      const depIcao = getIcaoCode(from); // Departure ICAO code
-
-      // Construct the arrival GCR output
-      const arrivalOutputStr = buildArrivalGcr(
-        reg,
-        date,
-        slotCode,
-        arrivalTime,
-        depIcao,
-        "D", // Arrival (using 'D' as per user specification)
-        getSlotType()
-      );
-
-      document.getElementById("arrivalOutput").textContent = arrivalOutputStr;
-      document.getElementById("arrivalContainer").style.display = "block";
-    }
-
-    function formatBoth() {
-      formatDeparture();
-      formatArrival();
-    }
-
+    
     function hideAllContainers() {
-      document.getElementById("departureContainer").style.display = "none";
-      document.getElementById("arrivalContainer").style.display = "none";
-      document.getElementById("departureOutput").textContent = "";
-      document.getElementById("arrivalOutput").textContent = "";
+      document.getElementById("gcrContainer").style.display = "none";
+      document.getElementById("gcrOutput").textContent = "";
     }
-
+    
     function copyToClipboard(elementId) {
       const text = document.getElementById(elementId).textContent;
       navigator.clipboard.writeText(text)
-        .then(() => alert('Copied to clipboard!'))
-        .catch(err => alert('Failed to copy: ', err));
+        .then(() => showToast('Copied to clipboard!'))
+        .catch(err => showToast('Failed to copy.'));
+    }
+    
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+    
+    function downloadGcr(elementId) {
+      const text = document.getElementById(elementId).textContent;
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `GCR_${new Date().toISOString().slice(0,10)}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
     }
   </script>
 </body>
