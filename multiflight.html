@@ -154,7 +154,7 @@
       font-family: 'Roboto Mono', monospace;
       color: #00FFD1;
       line-height: 1.5;
-      max-height: 200px;
+      max-height: 400px;
       overflow-y: auto;
       position: relative;
     }
@@ -164,25 +164,23 @@
       color: #00FFD1;
     }
 
-    /* Additional Styling for Multiple Outputs */
-    .scr-entry {
+    /* Additional Styling for Grouped Outputs */
+    .scr-group {
       border: 1px solid #444;
       border-radius: 4px;
       padding: 15px;
       margin-bottom: 15px;
       background: #1A1A1A;
-      /* Removed position: relative; to prevent overlap */
     }
-    .scr-entry .send-button-container {
+    .scr-group .send-button-container {
       display: flex;
       justify-content: flex-end;
       margin-top: 10px;
     }
-    .scr-entry .send-button-container button {
+    .scr-group .send-button-container button {
       margin-left: 10px;
       padding: 5px 10px;
       font-size: 12px;
-      /* Ensuring buttons are not positioned absolutely */
       position: static;
     }
 
@@ -296,7 +294,7 @@
     }
 
     // -------------- PART 2: EXISTING LOGIC / GLOBAL VARS --------------
-    let currentSlotType = "";           // e.g. "NEW SLOT" or "CANCEL SLOT"
+    let currentSlotType = ""; // e.g. "NEW SLOT" or "CANCEL SLOT"
 
     // Maps day-of-week to operation code
     function getDayOfOperation(dayOfWeek) {
@@ -327,8 +325,8 @@
         const flightRaw = parts[0];
         const from = parts[1];
         const to = parts[2];
-        const date = parts[3].slice(0, 5);  // e.g. "21DEC"
-        const fullDate = parts[3];         // e.g. "21DEC2024"
+        const date = parts[3].slice(0, 5);  // e.g. "07JAN"
+        const fullDate = parts[3];         // e.g. "07JAN2025"
         const departureTime = parts[4];
         const arrivalTime = parts[5];
         const code = parts[6];
@@ -435,122 +433,151 @@
       const outputList = document.getElementById("outputList");
       outputList.innerHTML = ""; // Clear previous outputs
 
-      parsedEntries.forEach((data, index) => {
-        const { flight, from, to, date, departureTime, arrivalTime, dayOfOperation } = data;
+      // Group flights by airport
+      const airportGroups = {};
 
-        // Flight Type
-        const flightType = currentSlotType === "CANCEL SLOT" ? "D" : "N";
+      parsedEntries.forEach((data) => {
+        const { from, to } = data;
 
-        // SI Line
+        // Group for 'from' airport (departure)
+        if (!airportGroups[from]) {
+          airportGroups[from] = {
+            airportCode: from,
+            flights: []
+          };
+        }
+        airportGroups[from].flights.push({
+          type: 'departure',
+          data
+        });
+
+        // Group for 'to' airport (arrival)
+        if (!airportGroups[to]) {
+          airportGroups[to] = {
+            airportCode: to,
+            flights: []
+          };
+        }
+        airportGroups[to].flights.push({
+          type: 'arrival',
+          data
+        });
+      });
+
+      // Remove duplicate flights within the same airport
+      // (In case a flight is both departure and arrival at the same airport)
+      Object.keys(airportGroups).forEach(airportCode => {
+        const seen = new Set();
+        airportGroups[airportCode].flights = airportGroups[airportCode].flights.filter(flightEntry => {
+          const uniqueKey = flightEntry.type + flightEntry.data.flight;
+          if (seen.has(uniqueKey)) {
+            return false;
+          } else {
+            seen.add(uniqueKey);
+            return true;
+          }
+        });
+      });
+
+      // Iterate through each airport group to create SCR messages
+      Object.values(airportGroups).forEach((group, groupIndex) => {
+        const { airportCode, flights } = group;
+
+        // Initialize SCR message lines
+        let scrLines = [];
+        scrLines.push("SCR");
+        scrLines.push("W24");
+        scrLines.push(getCurrentDate()); // Assuming SCR date is current date or can be modified
+        scrLines.push(airportCode);
+
+        // Append each flight line
+        flights.forEach(flightEntry => {
+          const { type, data } = flightEntry;
+          const { flight, date, dayOfOperation, departureTime, arrivalTime, from, to } = data;
+
+          // Determine flight type
+          const flightType = currentSlotType === "CANCEL SLOT" ? "D" : "N";
+
+          // Build flight line based on type
+          if (type === 'departure') {
+            scrLines.push(`${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${departureTime}${to} ${option}`);
+          } else if (type === 'arrival') {
+            scrLines.push(`${flightType}${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${from}${arrivalTime} ${option}`);
+          }
+        });
+
+        // Append SI line
         const siLine =
           option === "D"
-            ? `SI ${currentSlotType} REQ ${from} // LEARJET REG: ${reg}`
-            : `SI ${currentSlotType} REQ ${from}`;
+            ? `SI ${currentSlotType} REQ ${airportCode} // LEARJET REG: ${reg}`
+            : `SI ${currentSlotType} REQ ${airportCode}`;
+        scrLines.push(siLine);
 
-        // Departure SCR
-        const departureOutput = `
-SCR
-W24
-${date}
-${from}
-${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${departureTime}${to} ${option}
-${siLine}
-        `.trim();
+        // Combine lines into a single string
+        const scrOutput = scrLines.join("\n");
 
-        // SI Line for Arrival
-        const siLineArrival =
-          option === "D"
-            ? `SI ${currentSlotType} REQ ${to} // LEARJET REG: ${reg}`
-            : `SI ${currentSlotType} REQ ${to}`;
+        // Create SCR Group Element
+        const scrGroup = document.createElement("div");
+        scrGroup.classList.add("scr-group");
 
-        // Arrival SCR
-        const arrivalOutput = `
-SCR
-W24
-${date}
-${to}
-${flightType}${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${from}${arrivalTime} ${option}
-${siLineArrival}
-        `.trim();
+        // Heading
+        const headingDiv = document.createElement("div");
+        headingDiv.classList.add("heading");
+        headingDiv.textContent = `SCR [${airportCode}]`;
 
-        // Create SCR Entry Element
-        const scrEntry = document.createElement("div");
-        scrEntry.classList.add("scr-entry");
+        // SCR Output
+        const outputDiv = document.createElement("div");
+        outputDiv.classList.add("output-container");
+        outputDiv.innerHTML = `<pre>${scrOutput}</pre>`;
 
-        // Departure Section
-        const departureDiv = document.createElement("div");
-        departureDiv.classList.add("output-container");
-        departureDiv.innerHTML = `
-          <div class="heading">Departure [${from}]</div>
-          <pre>${departureOutput}</pre>
-          <div class="send-button-container">
-            <button class="send-departure-btn" data-index="${index}">Send Departure Email</button>
-          </div>
-        `;
+        // Send Button
+        const sendButtonContainer = document.createElement("div");
+        sendButtonContainer.classList.add("send-button-container");
+        const sendBtn = document.createElement("button");
+        sendBtn.textContent = "Send Email";
+        sendBtn.dataset.airportCode = airportCode;
+        sendBtn.dataset.groupIndex = groupIndex;
+        sendButtonContainer.appendChild(sendBtn);
 
-        // Arrival Section
-        const arrivalDiv = document.createElement("div");
-        arrivalDiv.classList.add("output-container");
-        arrivalDiv.innerHTML = `
-          <div class="heading">Arrival [${to}]</div>
-          <pre>${arrivalOutput}</pre>
-          <div class="send-button-container">
-            <button class="send-arrival-btn" data-index="${index}">Send Arrival Email</button>
-          </div>
-        `;
-
-        // Append to SCR Entry
-        scrEntry.appendChild(departureDiv);
-        scrEntry.appendChild(arrivalDiv);
+        // Append all to SCR Group
+        scrGroup.appendChild(headingDiv);
+        scrGroup.appendChild(outputDiv);
+        scrGroup.appendChild(sendButtonContainer);
 
         // Store SCR Outputs in Data Attributes for Bulk Sending
-        scrEntry.dataset.departure = departureOutput;
-        scrEntry.dataset.arrival = arrivalOutput;
-        scrEntry.dataset.from = from;
-        scrEntry.dataset.to = to;
+        scrGroup.dataset.scrOutput = scrOutput;
+        scrGroup.dataset.airportCode = airportCode;
 
-        // Append SCR Entry to Output List
-        outputList.appendChild(scrEntry);
+        // Append SCR Group to Output List
+        outputList.appendChild(scrGroup);
       });
 
       showSuccess(`Formatted ${parsedEntries.length} flight(s) successfully.`);
 
       // Attach Event Listeners to Newly Created Buttons
-      attachSendButtonsListeners(parsedEntries.length);
+      attachSendButtonsListeners();
     }
 
-    function attachSendButtonsListeners(totalEntries) {
-      for (let index = 0; index < totalEntries; index++) {
-        // Departure Buttons
-        const departureBtn = document.querySelector(`.send-departure-btn[data-index="${index}"]`);
-        if (departureBtn) {
-          departureBtn.addEventListener("click", () => {
-            sendEmail(index, 'departure');
-          });
-        }
-
-        // Arrival Buttons
-        const arrivalBtn = document.querySelector(`.send-arrival-btn[data-index="${index}"]`);
-        if (arrivalBtn) {
-          arrivalBtn.addEventListener("click", () => {
-            sendEmail(index, 'arrival');
-          });
-        }
-      }
+    // Helper function to get current date in DDMMM format (e.g., 07JAN)
+    function getCurrentDate() {
+      const dateObj = new Date();
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      const month = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
+      return `${day}${month}`;
     }
 
-    function sendEmail(index, type) {
-      const outputList = document.getElementById("outputList");
-      const scrEntries = outputList.getElementsByClassName("scr-entry");
+    function attachSendButtonsListeners() {
+      const sendButtons = document.querySelectorAll(".scr-group .send-button-container button");
+      sendButtons.forEach(button => {
+        button.addEventListener("click", () => {
+          const airportCode = button.dataset.airportCode;
+          const scrOutput = button.parentElement.parentElement.dataset.scrOutput;
+          sendEmail(airportCode, scrOutput);
+        });
+      });
+    }
 
-      if (index >= scrEntries.length) {
-        showError("Invalid SCR entry index.");
-        return;
-      }
-
-      const scrEntry = scrEntries[index];
-      const output = type === "departure" ? scrEntry.dataset.departure : scrEntry.dataset.arrival;
-      const airportCode = type === "departure" ? scrEntry.dataset.from : scrEntry.dataset.to;
+    function sendEmail(airportCode, scrOutput) {
       const subject = `${currentSlotType} REQ ${airportCode}`;
 
       // Primary recipient from JSON (based on airportCode)
@@ -561,54 +588,55 @@ ${siLineArrival}
 
       // Build mailto link
       const emailSubject = encodeURIComponent(subject);
-      const emailBody = encodeURIComponent(output); // Removed .replace(/\n/g, "%0A")
-      const mailtoLink = `mailto:${recipientEmail}?cc=${ccEmail}&subject=${emailSubject}&body=${emailBody}`;
+      const emailBody = encodeURIComponent(scrOutput);
+      const mailtoLink = `mailto:${recipientEmail}?cc=${encodeURIComponent(ccEmail)}&subject=${emailSubject}&body=${emailBody}`;
 
       // Trigger email in a new tab/window
       window.open(mailtoLink, '_blank');
+
+      showSuccess(`Email for ${airportCode} has been triggered.`);
     }
 
     function sendAllEmails() {
       const outputList = document.getElementById("outputList");
-      const scrEntries = outputList.getElementsByClassName("scr-entry");
+      const scrGroups = outputList.getElementsByClassName("scr-group");
 
-      if (scrEntries.length === 0) {
+      if (scrGroups.length === 0) {
         showError("No SCR messages to send. Please format first.");
         return;
       }
 
       let emailsSent = 0;
-      const totalEmails = scrEntries.length * 2; // Departure and Arrival for each entry
+      const totalEmails = scrGroups.length;
 
-      Array.from(scrEntries).forEach((scrEntry, index) => {
-        // Send Departure Email
-        const departureOutput = scrEntry.dataset.departure;
-        const from = scrEntry.dataset.from;
-        const subjectDep = `${currentSlotType} REQ ${from}`;
-        const recipientDep = getAirportEmail(from);
-        const emailSubjectDep = encodeURIComponent(subjectDep);
-        const emailBodyDep = encodeURIComponent(departureOutput); // Removed .replace(/\n/g, "%0A")
-        const mailtoLinkDep = `mailto:${recipientDep}?cc=slotdesk@ryanair.com&subject=${emailSubjectDep}&body=${emailBodyDep}`;
+      Array.from(scrGroups).forEach((scrGroup, index) => {
+        const airportCode = scrGroup.dataset.airportCode;
+        const scrOutput = scrGroup.dataset.scrOutput;
+        const subject = `${currentSlotType} REQ ${airportCode}`;
 
-        // Send Arrival Email
-        const arrivalOutput = scrEntry.dataset.arrival;
-        const to = scrEntry.dataset.to;
-        const subjectArr = `${currentSlotType} REQ ${to}`;
-        const recipientArr = getAirportEmail(to);
-        const emailSubjectArr = encodeURIComponent(subjectArr);
-        const emailBodyArr = encodeURIComponent(arrivalOutput); // Removed .replace(/\n/g, "%0A")
-        const mailtoLinkArr = `mailto:${recipientArr}?cc=slotdesk@ryanair.com&subject=${emailSubjectArr}&body=${emailBodyArr}`;
+        // Primary recipient from JSON (based on airportCode)
+        const recipientEmail = getAirportEmail(airportCode);
 
-        // Open mailto links sequentially with a slight delay to prevent overwhelming the email client
+        // CC
+        const ccEmail = "slotdesk@ryanair.com";
+
+        // Encode subject and body
+        const emailSubject = encodeURIComponent(subject);
+        const emailBody = encodeURIComponent(scrOutput);
+
+        // Construct mailto link
+        const mailtoLink = `mailto:${recipientEmail}?cc=${encodeURIComponent(ccEmail)}&subject=${emailSubject}&body=${emailBody}`;
+
+        // Open mailto link in a new window/tab with a slight delay
         setTimeout(() => {
-          window.open(mailtoLinkDep, '_blank');
-          window.open(mailtoLinkArr, '_blank');
-          emailsSent += 2;
+          window.open(mailtoLink, '_blank');
+          emailsSent += 1;
 
+          // Notify when all emails have been triggered
           if (emailsSent === totalEmails) {
             showSuccess("All SCR emails have been triggered.");
           }
-        }, index * 1000); // 1-second interval between each set
+        }, index * 1000); // 1-second interval between each email
       });
     }
 
