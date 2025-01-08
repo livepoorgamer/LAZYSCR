@@ -1,145 +1,201 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SCR Message Requests - Toggle Output (Uppercase)</title>
+  <title>SCR Change Message Requests</title>
+  <!-- Google Fonts for 'Orbitron' and 'Roboto Mono' -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
   <style>
-    /* -------------------------------------------
-       GLOBAL / BASE STYLES
-    ---------------------------------------------- */
-    * {
-      box-sizing: border-box;
+    /* ----------------------------
+       BASIC STYLING
+    ----------------------------- */
+    body {
+      /* Futuristic, gradient background */
+      background: linear-gradient(135deg, #131313 0%, #323232 100%);
       margin: 0;
       padding: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Roboto Mono', monospace; /* Default font */
+      color: #fff; /* White text on dark background */
     }
 
-    body {
-      background: #f5f7fb;
-      color: #333;
-      padding: 20px;
-      font-size: 0.9rem;
+    /* Smooth transitions for hover effects, etc. */
+    * {
+      transition: all 0.2s ease-in-out;
     }
 
-    h1 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 20px;
-      font-size: 1.5rem;
+    /* ----------------------------
+       NAVIGATION STYLING
+    ----------------------------- */
+    nav {
+      background: #1B1B1B; /* Dark nav bar */
+      padding: 10px 20px;
+      border-bottom: 2px solid #00FFD1; /* A futuristic accent color */
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
     }
-
-    .main-container {
-      max-width: 900px; /* Reduced width for a more compact feel */
-      margin: 0 auto;
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
     }
-
-    /* -------------------------------------------
-       BUTTONS
-    ---------------------------------------------- */
-    .button-container {
-      text-align: center;
-      margin: 15px 0;
+    nav li {
+      margin-right: 20px;
     }
-
-    .btn {
-      display: inline-block;
-      margin: 5px;
-      padding: 6px 12px;
-      font-size: 0.9rem;
-      background-color: #3498db;
+    nav a {
       color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
+      text-decoration: none;
+      font-size: 16px;
+      font-family: 'Orbitron', sans-serif;
+      text-transform: uppercase;
     }
-    .btn:hover {
-      background-color: #2980b9;
-    }
-
-    /* -------------------------------------------
-       REQUEST FORM CONTAINER
-    ---------------------------------------------- */
-    .requests-container {
-      background-color: #fff;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      padding: 15px;
-      box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    nav a:hover {
+      color: #00FFD1;
+      text-shadow: 0 0 5px #00FFD1;
     }
 
-    .requests-container h2 {
-      color: #2c3e50;
-      border-left: 4px solid #3498db;
-      padding-left: 8px;
-      margin-bottom: 10px;
-      font-size: 1rem;
+    /* ----------------------------
+       CONTAINER STYLING
+    ----------------------------- */
+    .container {
+      max-width: 900px;
+      margin: 40px auto; 
+      padding: 20px;
+      background: #1F1F1F;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.2); /* Slight neon glow */
+    }
+    .container h1 {
+      text-transform: uppercase;
+      text-align: center;
+      color: #00FFD1;
+      text-shadow: 0 0 8px rgba(0, 255, 209, 0.7);
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2rem;
+    }
+    .container h2 {
+      color: #00FFD1;
+      text-shadow: 0 0 5px rgba(0, 255, 209, 0.7);
+      margin-bottom: 20px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem;
+      text-transform: uppercase;
     }
 
-    /* -------------------------------------------
-       FORMS - HORIZONTAL LAYOUT
-    ---------------------------------------------- */
+    /* ----------------------------
+       FORMS STYLING
+    ----------------------------- */
     form {
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
 
     .form-row {
       display: flex;
-      flex-wrap: wrap; /* wrap if space is tight */
+      flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
 
     .form-group {
       display: flex;
-      align-items: center;
-      min-width: 130px;
+      flex-direction: column;
+      width: 100%;
+      max-width: 200px;
     }
 
     .form-group label {
-      margin-right: 6px;
-      font-weight: 600;
+      margin-bottom: 5px;
       font-size: 0.85rem;
+      font-family: 'Orbitron', sans-serif;
+      color: #00FFD1;
     }
 
     .form-group input,
     .form-group select {
-      width: 110px;
-      padding: 4px;
-      font-size: 0.85rem;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus {
+      padding: 10px;
+      background: #2E2E2E;
+      color: #FFF;
+      border: 1px solid #444;
+      border-radius: 4px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 14px;
       outline: none;
-      border-color: #3498db;
-      box-shadow: 0 0 3px rgba(52,152,219,0.2);
+      resize: vertical;
     }
 
-    input[type="date"] {
-      width: 120px; /* a bit wider for date */
+    .form-group input::placeholder, 
+    .form-group select::placeholder {
+      color: #aaa;
     }
 
-    /* 1) Force text inputs to appear uppercase visually. */
-    input[type="text"] {
+    /* ----------------------------
+       BUTTONS STYLING
+    ----------------------------- */
+    .button-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      margin: 5px 10px 5px 0;
+      background: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
       text-transform: uppercase;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0);
+    }
+    .btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
     }
 
-    /* -------------------------------------------
-       OUTPUT LIST AREA
-    ---------------------------------------------- */
-    .output-list {
+    /* ----------------------------
+       OUTPUT CONTAINER
+    ----------------------------- */
+    .output-container {
       margin-top: 20px;
+      padding: 20px;
+      background: #101010;
+      border: 1px dashed #00FFD1;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      font-family: 'Roboto Mono', monospace;
+      color: #00FFD1;
+      line-height: 1.5;
+    }
+    .output-container .heading {
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      color: #00FFD1;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem;
     }
 
-    /* Each row for an SCR message (airport + 2 buttons) */
+    /* ----------------------------
+       HIDDEN CONTAINERS
+    ----------------------------- */
+    #departureContainer,
+    #arrivalContainer {
+      display: none;
+    }
+
+    /* ----------------------------
+       SCR MESSAGE STYLING
+    ----------------------------- */
     .scr-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 5px;
+      margin-bottom: 10px;
     }
     .scr-info-left {
       display: flex;
@@ -149,61 +205,72 @@
     .airport-code {
       font-weight: bold;
       font-size: 1rem;
+      font-family: 'Orbitron', sans-serif;
     }
 
     .button-group {
       display: flex;
-      gap: 5px; /* space between Email and +/- */
+      gap: 5px;
     }
 
     .button-group button {
-      padding: 5px 10px;
+      padding: 8px 16px;
       border: none;
-      border-radius: 3px;
+      border-radius: 4px;
       cursor: pointer;
       font-size: 0.9rem;
-      color: #fff;
+      text-transform: uppercase;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
     }
     .email-btn {
-      background-color: #333; /* or your desired color */
+      background: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0);
+    }
+    .email-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
     }
     .toggle-btn {
-      background-color: #555; /* or your desired color */
-      width: 30px;
+      background: #555;
+      color: #fff;
+      width: 40px;
       text-align: center;
-      padding: 5px;
+      padding: 8px;
+      box-shadow: 0 0 5px rgba(0, 255, 209, 0);
+    }
+    .toggle-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
     }
 
-    /* The hidden SCR message (expandable) */
     .scr-message {
-      margin-left: 20px; /* indent a bit */
-      margin-bottom: 15px;
-      padding: 10px;
-      background-color: #f5f5f5;
-      border-left: 4px solid #333;
-      white-space: pre; /* preserve line breaks if needed */
-      display: none;    /* hidden by default */
+      margin-top: 10px;
+      padding: 15px;
+      background: #1E1E1E;
+      border-left: 4px solid #00FFD1;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      font-family: 'Roboto Mono', monospace;
+      color: #00FFD1;
     }
-
   </style>
 </head>
 <body>
 
-  <div class="main-container">
+  <!-- Navigation Bar -->
+  <nav>
+    <ul>
+      <li><a href="index.html">Back to Home</a></li>
+      <!-- Add more navigation items here if needed -->
+    </ul>
+  </nav>
+
+  <!-- Main Container -->
+  <div class="container">
     <h1>SCR Change Message Requests</h1>
-     <!-- Navigation link to home page -->
-<nav style="margin-bottom: 20px;">
-  <a href="index.html" style="
-     display: inline-block;
-     padding: 8px 12px;
-     background-color: #3498db;
-     color: #fff;
-     text-decoration: none;
-     border-radius: 4px;
-  ">
-    Back to Home
-  </a>
-</nav>
+
     <!-- Where all pairs of forms will be placed -->
     <div id="formsWrapper"></div>
 
@@ -214,15 +281,17 @@
       <button class="btn" id="showSCRBtn">Show SCR Messages</button>
     </div>
 
-    <!-- Container to hold the .scr-row + .scr-message pairs -->
-    <div id="outputList" class="output-list"></div>
-
+    <!-- Container to hold the SCR messages -->
+    <div id="outputList" class="output-container">
+      <div class="heading">SCR Messages</div>
+      <!-- SCR messages will be appended here -->
+    </div>
   </div>
 
   <!-- Hidden template that contains one “pair” of forms -->
   <template id="formsTemplate">
     <div class="requests-container">
-      <h3>Request #</h3> <!-- We'll set the request number dynamically -->
+      <h2>Request #</h2> <!-- We'll set the request number dynamically -->
 
       <h2>Old Request</h2>
       <form class="old-request-form">
@@ -352,17 +421,19 @@
     };
 
     let requestCount = 0; 
+    let emailData = {}; // To store emails fetched from emails.json
 
-    // On page load, add the first pair
+    // On page load, add the first pair and fetch emails.json
     window.addEventListener('DOMContentLoaded', () => {
       addFormsPair();
+      fetchEmails();
     });
 
     addFormsBtn.addEventListener('click', addFormsPair);
 
     resetBtn.addEventListener('click', () => {
       formsWrapper.innerHTML = '';
-      outputList.innerHTML   = '';
+      outputList.innerHTML   = '<div class="heading">SCR Messages</div>';
       requestCount = 0;
       addFormsPair();
     });
@@ -370,11 +441,11 @@
     // Show SCR for each container -> create togglable rows
     showSCRBtn.addEventListener('click', () => {
       // Clear previous output
-      outputList.innerHTML = '';
+      outputList.innerHTML = '<div class="heading">SCR Messages</div>';
 
       const containers = formsWrapper.querySelectorAll('.requests-container');
       if (containers.length === 0) {
-        outputList.textContent = 'No forms available.';
+        outputList.innerHTML += 'No forms available.';
         return;
       }
 
@@ -386,6 +457,12 @@
         // Extract data
         const oldData = getFormData(oldForm);
         const newData = getFormData(newForm);
+
+        // Validate required fields
+        if (!validateFormData(oldData, newData)) {
+          alert('Please fill out all required fields.');
+          return;
+        }
 
         // Build SCR
         const scrMessage = buildSCRMessage(oldData, newData);
@@ -410,9 +487,9 @@
         const emailBtn = document.createElement('button');
         emailBtn.classList.add('email-btn');
         emailBtn.textContent = 'Email';
-        // placeholder logic:
+        // Updated logic: Open email client directly with CC and subject
         emailBtn.addEventListener('click', () => {
-          alert('Email button clicked!\n\nMessage:\n' + scrMessage);
+          sendEmail(airportCode, scrMessage);
         });
 
         const toggleBtn = document.createElement('button');
@@ -453,12 +530,12 @@
       const clone = formsTemplate.content.cloneNode(true);
       
       // Title
-      const heading = clone.querySelector('h3');
+      const heading = clone.querySelector('h2');
       if (heading) {
         heading.textContent = `Request #${requestCount}`;
       }
 
-      // 2) Enforce uppercase for text inputs
+      // Enforce uppercase for text inputs
       const textInputs = clone.querySelectorAll('input[type="text"]');
       textInputs.forEach(input => {
         // Force actual value to uppercase
@@ -466,6 +543,20 @@
           input.value = input.value.toUpperCase();
         });
       });
+
+      // Synchronize Slot Type between Old and New Request
+      const oldSlotTypeSelect = clone.querySelector('.old-request-form select[name="slotType"]');
+      const newSlotTypeSelect = clone.querySelector('.new-request-form select[name="slotType"]');
+
+      if (oldSlotTypeSelect && newSlotTypeSelect) {
+        // Set initial value of New Request SlotType to match Old Request
+        newSlotTypeSelect.value = oldSlotTypeSelect.value;
+
+        // Add event listener to Old Request SlotType
+        oldSlotTypeSelect.addEventListener('change', (event) => {
+          newSlotTypeSelect.value = event.target.value;
+        });
+      }
 
       formsWrapper.appendChild(clone);
     }
@@ -483,6 +574,20 @@
       const stc      = formEl.querySelector('select[name="stc"]')?.value || '';
 
       return { slotType, airport, flightNo, date, seats, acType, time, doField, stc };
+    }
+
+    /** Validate that all required fields are filled */
+    function validateFormData(oldReq, newReq) {
+      // Define required fields as per your application's needs
+      const requiredFields = ['slotType', 'airport', 'flightNo', 'date', 'seats', 'acType', 'time', 'doField', 'stc'];
+      
+      for (let field of requiredFields) {
+        if (!oldReq[field] || !newReq[field]) {
+          return false;
+        }
+      }
+
+      return true;
     }
 
     function buildSCRMessage(oldReq, newReq) {
@@ -523,7 +628,12 @@
 
       const dateDDMMM  = formatDateToDDMMM(req.date) || '25DEC';
       const doCode     = getDayOfOperationCode(req.date);
-      const acTypeCode = '000' + (req.acType.replace(/\s/g, '') || '');
+      let acTypeCode = '000' + (req.acType.replace(/\s/g, '') || '');
+
+      // If STC is "D", replace "73H" with "LJ4"
+      if (req.stc === 'D') {
+        acTypeCode = 'LJ4';
+      }
 
       // Arrival => station + time
       // Departure => time + station
@@ -565,6 +675,48 @@
 
       const dayIndex = jsDate.getDay(); // Sunday=0, ...
       return dayOfOperationMap[dayIndex] || '0000000';
+    }
+
+    /** Function to fetch emails from emails.json */
+    async function fetchEmails() {
+      try {
+        const response = await fetch('assets/emails.json');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        emailData = data;
+        console.log('Emails fetched successfully:', emailData);
+      } catch (error) {
+        console.error('Error fetching emails.json:', error);
+        alert('Failed to load email data. Email functionality may be limited.');
+      }
+    }
+
+    /** Function to send email using mailto: link with CC and dynamic subject */
+    function sendEmail(airportCode, scrMessage) {
+      if (!emailData || !emailData[airportCode] || !emailData[airportCode].email) {
+        alert(`No email address found for airport code: ${airportCode}. Please check emails.json.`);
+        return;
+      }
+
+      const recipient = emailData[airportCode].email;
+      const subject = `SLOT CHG REQ ${airportCode}`;
+      const body = encodeURIComponent(scrMessage);
+      const cc = 'slotdesk@ryanair.com';
+
+      const mailtoLink = `mailto:${recipient}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}&body=${body}`;
+
+      // Create a temporary anchor element and trigger click
+      const a = document.createElement('a');
+      a.href = mailtoLink;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // Optional: Provide feedback to the user
+      alert(`Email client has been opened for ${airportCode}.`);
     }
   </script>
 </body>
