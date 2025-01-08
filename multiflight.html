@@ -415,6 +415,14 @@
       setTimeout(() => { successDiv.style.display = "none"; }, 5000); // Clear after 5 seconds
     }
 
+    // Helper function to get the appropriate code based on the selected option
+    function getOperationCode(option) {
+      if (option === "D") {
+        return "LJ4";
+      }
+      return "73H";
+    }
+
     function formatSCRMessages() {
       const input = document.getElementById("userInput").value;
       const parsedEntries = parseInput(input);
@@ -429,6 +437,9 @@
       const option = getSelectedOption();
       const codePrefix = getCodePrefix(option);
       const reg = getAircraftReg();
+
+      // Get the appropriate operation code based on the selected option
+      const operationCode = getOperationCode(option);
 
       const outputList = document.getElementById("outputList");
       outputList.innerHTML = ""; // Clear previous outputs
@@ -500,9 +511,9 @@
 
           // Build flight line based on type
           if (type === 'departure') {
-            scrLines.push(`${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${departureTime}${to} ${option}`);
+            scrLines.push(`${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}${operationCode} ${departureTime}${to} ${option}`);
           } else if (type === 'arrival') {
-            scrLines.push(`${flightType}${flight} ${date}${date} ${dayOfOperation} ${codePrefix}73H ${from}${arrivalTime} ${option}`);
+            scrLines.push(`${flightType}${flight} ${date}${date} ${dayOfOperation} ${codePrefix}${operationCode} ${from}${arrivalTime} ${option}`);
           }
         });
 
