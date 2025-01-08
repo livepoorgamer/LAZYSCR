@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>SCR Message Requests - Toggle Output (Uppercase)</title>
+  <style>
+    /* -------------------------------------------
+       GLOBAL / BASE STYLES
+    ---------------------------------------------- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #f5f7fb;
+      color: #333;
+      padding: 20px;
+      font-size: 0.9rem;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+    }
+
+    .main-container {
+      max-width: 900px; /* Reduced width for a more compact feel */
+      margin: 0 auto;
+    }
+
+    /* -------------------------------------------
+       BUTTONS
+    ---------------------------------------------- */
+    .button-container {
+      text-align: center;
+      margin: 15px 0;
+    }
+
+    .btn {
+      display: inline-block;
+      margin: 5px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .btn:hover {
+      background-color: #2980b9;
+    }
+
+    /* -------------------------------------------
+       REQUEST FORM CONTAINER
+    ---------------------------------------------- */
+    .requests-container {
+      background-color: #fff;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      padding: 15px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    }
+
+    .requests-container h2 {
+      color: #2c3e50;
+      border-left: 4px solid #3498db;
+      padding-left: 8px;
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+
+    /* -------------------------------------------
+       FORMS - HORIZONTAL LAYOUT
+    ---------------------------------------------- */
+    form {
+      margin-bottom: 15px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap; /* wrap if space is tight */
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .form-group {
+      display: flex;
+      align-items: center;
+      min-width: 130px;
+    }
+
+    .form-group label {
+      margin-right: 6px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 110px;
+      padding: 4px;
+      font-size: 0.85rem;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 3px rgba(52,152,219,0.2);
+    }
+
+    input[type="date"] {
+      width: 120px; /* a bit wider for date */
+    }
+
+    /* 1) Force text inputs to appear uppercase visually. */
+    input[type="text"] {
+      text-transform: uppercase;
+    }
+
+    /* -------------------------------------------
+       OUTPUT LIST AREA
+    ---------------------------------------------- */
+    .output-list {
+      margin-top: 20px;
+    }
+
+    /* Each row for an SCR message (airport + 2 buttons) */
+    .scr-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .scr-info-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .airport-code {
+      font-weight: bold;
+      font-size: 1rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 5px; /* space between Email and +/- */
+    }
+
+    .button-group button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: #fff;
+    }
+    .email-btn {
+      background-color: #333; /* or your desired color */
+    }
+    .toggle-btn {
+      background-color: #555; /* or your desired color */
+      width: 30px;
+      text-align: center;
+      padding: 5px;
+    }
+
+    /* The hidden SCR message (expandable) */
+    .scr-message {
+      margin-left: 20px; /* indent a bit */
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-left: 4px solid #333;
+      white-space: pre; /* preserve line breaks if needed */
+      display: none;    /* hidden by default */
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="main-container">
+    <h1>SCR Change Message Requests</h1>
+     <!-- Navigation link to home page -->
+<nav style="margin-bottom: 20px;">
+  <a href="index.html" style="
+     display: inline-block;
+     padding: 8px 12px;
+     background-color: #3498db;
+     color: #fff;
+     text-decoration: none;
+     border-radius: 4px;
+  ">
+    Back to Home
+  </a>
+</nav>
+    <!-- Where all pairs of forms will be placed -->
+    <div id="formsWrapper"></div>
+
+    <!-- Button container for adding more / resetting / showing message -->
+    <div class="button-container">
+      <button class="btn" id="addFormsBtn">Add More Requests</button>
+      <button class="btn" id="resetBtn">Reset</button>
+      <button class="btn" id="showSCRBtn">Show SCR Messages</button>
+    </div>
+
+    <!-- Container to hold the .scr-row + .scr-message pairs -->
+    <div id="outputList" class="output-list"></div>
+
+  </div>
+
+  <!-- Hidden template that contains one “pair” of forms -->
+  <template id="formsTemplate">
+    <div class="requests-container">
+      <h3>Request #</h3> <!-- We'll set the request number dynamically -->
+
+      <h2>Old Request</h2>
+      <form class="old-request-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Slot</label>
+            <select required name="slotType">
+              <option value="" disabled selected>-</option>
+              <option value="Arrival">Arrival</option>
+              <option value="Departure">Departure</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Airport</label>
+            <input type="text" name="airport" placeholder="DUB">
+          </div>
+          <div class="form-group">
+            <label>Flight</label>
+            <input type="text" name="flightNo" placeholder="FR123">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" name="date">
+          </div>
+          <div class="form-group">
+            <label>Seats</label>
+            <input type="number" name="seats" placeholder="189">
+          </div>
+          <div class="form-group">
+            <label>A/C</label>
+            <input type="text" name="acType" placeholder="73H">
+          </div>
+          <div class="form-group">
+            <label>Time</label>
+            <input type="text" name="time" placeholder="2000">
+          </div>
+          <div class="form-group">
+            <label>D/O</label>
+            <input type="text" name="do" placeholder="STN">
+          </div>
+          <div class="form-group">
+            <label>STC</label>
+            <select required name="stc">
+              <option value="" disabled selected>-</option>
+              <option value="P">P</option>
+              <option value="D">D</option>
+              <option value="T">T</option>
+              <option value="K">K</option>
+              <option value="J">J</option>
+            </select>
+          </div>
+        </div>
+      </form>
+
+      <h2>New Request</h2>
+      <form class="new-request-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Slot</label>
+            <select required name="slotType">
+              <option value="" disabled selected>-</option>
+              <option value="Arrival">Arrival</option>
+              <option value="Departure">Departure</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Airport</label>
+            <input type="text" name="airport" placeholder="DUB">
+          </div>
+          <div class="form-group">
+            <label>Flight</label>
+            <input type="text" name="flightNo" placeholder="FR123">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" name="date">
+          </div>
+          <div class="form-group">
+            <label>Seats</label>
+            <input type="number" name="seats" placeholder="189">
+          </div>
+          <div class="form-group">
+            <label>A/C</label>
+            <input type="text" name="acType" placeholder="73H">
+          </div>
+          <div class="form-group">
+            <label>Time</label>
+            <input type="text" name="time" placeholder="2100">
+          </div>
+          <div class="form-group">
+            <label>D/O</label>
+            <input type="text" name="do" placeholder="STN">
+          </div>
+          <div class="form-group">
+            <label>STC</label>
+            <select required name="stc">
+              <option value="" disabled selected>-</option>
+              <option value="P">P</option>
+              <option value="D">D</option>
+              <option value="T">T</option>
+              <option value="K">K</option>
+              <option value="J">J</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+  </template>
+
+  <script>
+    const formsWrapper  = document.getElementById('formsWrapper');
+    const addFormsBtn   = document.getElementById('addFormsBtn');
+    const resetBtn      = document.getElementById('resetBtn');
+    const showSCRBtn    = document.getElementById('showSCRBtn');
+    const formsTemplate = document.getElementById('formsTemplate');
+    const outputList    = document.getElementById('outputList');
+
+    // Dictionary of day-of-operation codes
+    const dayOfOperationMap = {
+      0: '0000007', // Sunday
+      1: '1000000', // Monday
+      2: '0200000', // Tuesday
+      3: '0030000', // Wednesday
+      4: '0004000', // Thursday
+      5: '0000500', // Friday
+      6: '0000060', // Saturday
+    };
+
+    let requestCount = 0; 
+
+    // On page load, add the first pair
+    window.addEventListener('DOMContentLoaded', () => {
+      addFormsPair();
+    });
+
+    addFormsBtn.addEventListener('click', addFormsPair);
+
+    resetBtn.addEventListener('click', () => {
+      formsWrapper.innerHTML = '';
+      outputList.innerHTML   = '';
+      requestCount = 0;
+      addFormsPair();
+    });
+
+    // Show SCR for each container -> create togglable rows
+    showSCRBtn.addEventListener('click', () => {
+      // Clear previous output
+      outputList.innerHTML = '';
+
+      const containers = formsWrapper.querySelectorAll('.requests-container');
+      if (containers.length === 0) {
+        outputList.textContent = 'No forms available.';
+        return;
+      }
+
+      containers.forEach((container) => {
+        const oldForm = container.querySelector('.old-request-form');
+        const newForm = container.querySelector('.new-request-form');
+        if (!oldForm || !newForm) return;
+
+        // Extract data
+        const oldData = getFormData(oldForm);
+        const newData = getFormData(newForm);
+
+        // Build SCR
+        const scrMessage = buildSCRMessage(oldData, newData);
+
+        // Use Old Request airport for the label
+        const airportCode = oldData.airport || '???';
+
+        // Create row + hidden message
+        const rowDiv = document.createElement('div');
+        rowDiv.classList.add('scr-row');
+
+        const infoLeftDiv = document.createElement('div');
+        infoLeftDiv.classList.add('scr-info-left');
+        const airportSpan = document.createElement('span');
+        airportSpan.classList.add('airport-code');
+        airportSpan.textContent = airportCode;
+        infoLeftDiv.appendChild(airportSpan);
+
+        const buttonGroup = document.createElement('div');
+        buttonGroup.classList.add('button-group');
+
+        const emailBtn = document.createElement('button');
+        emailBtn.classList.add('email-btn');
+        emailBtn.textContent = 'Email';
+        // placeholder logic:
+        emailBtn.addEventListener('click', () => {
+          alert('Email button clicked!\n\nMessage:\n' + scrMessage);
+        });
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.classList.add('toggle-btn');
+        toggleBtn.textContent = '+';
+
+        // The hidden message
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('scr-message');
+        msgDiv.textContent = scrMessage;
+
+        // Toggle show/hide
+        toggleBtn.addEventListener('click', () => {
+          if (msgDiv.style.display === 'none' || !msgDiv.style.display) {
+            msgDiv.style.display = 'block';
+            toggleBtn.textContent = '-';
+          } else {
+            msgDiv.style.display = 'none';
+            toggleBtn.textContent = '+';
+          }
+        });
+
+        buttonGroup.appendChild(emailBtn);
+        buttonGroup.appendChild(toggleBtn);
+
+        rowDiv.appendChild(infoLeftDiv);
+        rowDiv.appendChild(buttonGroup);
+
+        outputList.appendChild(rowDiv);
+        outputList.appendChild(msgDiv);
+      });
+    });
+
+    /** Adds a new pair of forms. Also sets a "Request #n" heading 
+        and ensures text inputs become uppercase. */
+    function addFormsPair() {
+      requestCount++;
+      const clone = formsTemplate.content.cloneNode(true);
+      
+      // Title
+      const heading = clone.querySelector('h3');
+      if (heading) {
+        heading.textContent = `Request #${requestCount}`;
+      }
+
+      // 2) Enforce uppercase for text inputs
+      const textInputs = clone.querySelectorAll('input[type="text"]');
+      textInputs.forEach(input => {
+        // Force actual value to uppercase
+        input.addEventListener('input', () => {
+          input.value = input.value.toUpperCase();
+        });
+      });
+
+      formsWrapper.appendChild(clone);
+    }
+
+    /** Gather data from forms */
+    function getFormData(formEl) {
+      const slotType = formEl.querySelector('select[name="slotType"]')?.value || '';
+      const airport  = formEl.querySelector('input[name="airport"]')?.value || '';
+      const flightNo = formEl.querySelector('input[name="flightNo"]')?.value || '';
+      const date     = formEl.querySelector('input[name="date"]')?.value || '';
+      const seats    = formEl.querySelector('input[name="seats"]')?.value || '';
+      const acType   = formEl.querySelector('input[name="acType"]')?.value || '';
+      const time     = formEl.querySelector('input[name="time"]')?.value || '';
+      const doField  = formEl.querySelector('input[name="do"]')?.value || '';
+      const stc      = formEl.querySelector('select[name="stc"]')?.value || '';
+
+      return { slotType, airport, flightNo, date, seats, acType, time, doField, stc };
+    }
+
+    function buildSCRMessage(oldReq, newReq) {
+      const seasonCode      = 'W24'; 
+      const oldReqDateDDMMM = formatDateToDDMMM(oldReq.date) || '01JAN';
+      const oldReqAirport   = oldReq.airport || 'XXX';
+
+      const lineSCR     = 'SCR';
+      const lineSeason  = seasonCode;
+      const lineDate    = oldReqDateDDMMM;
+      const lineAirport = oldReqAirport;
+
+      const lineOld = buildRequestLine('C', oldReq);
+      const lineNew = buildRequestLine('R', newReq);
+      const lineSI  = `SI SLOT CHG REQ ${oldReqAirport}`;
+
+      return [
+        lineSCR,
+        lineSeason,
+        lineDate,
+        lineAirport,
+        lineOld,
+        lineNew,
+        '',
+        lineSI
+      ].join('\n');
+    }
+
+    function buildRequestLine(prefix, req) {
+      // Arrival => no space: e.g. "CFR123"
+      // Departure => space: e.g. "C FR123"
+      let flightId;
+      if (req.slotType === 'Arrival') {
+        flightId = prefix + (req.flightNo || '');
+      } else {
+        flightId = prefix + ' ' + (req.flightNo || '');
+      }
+
+      const dateDDMMM  = formatDateToDDMMM(req.date) || '25DEC';
+      const doCode     = getDayOfOperationCode(req.date);
+      const acTypeCode = '000' + (req.acType.replace(/\s/g, '') || '');
+
+      // Arrival => station + time
+      // Departure => time + station
+      let stationTimeSegment;
+      if (req.slotType === 'Arrival') {
+        stationTimeSegment = (req.doField || '') + (req.time || '');
+      } else {
+        stationTimeSegment = (req.time || '') + (req.doField || '');
+      }
+
+      return [
+        flightId,
+        dateDDMMM + dateDDMMM,
+        doCode,
+        acTypeCode,
+        stationTimeSegment,
+        req.stc
+      ].join(' ');
+    }
+
+    function formatDateToDDMMM(isoDate) {
+      if (!isoDate) return '';
+      const [yyyy, mm, dd] = isoDate.split('-');
+      if (!yyyy || !mm || !dd) return '';
+
+      const monthNames = [
+        'JAN','FEB','MAR','APR','MAY','JUN',
+        'JUL','AUG','SEP','OCT','NOV','DEC'
+      ];
+      const monthIndex = parseInt(mm, 10) - 1;
+      if (monthIndex < 0 || monthIndex > 11) return '';
+      return dd + monthNames[monthIndex];
+    }
+
+    function getDayOfOperationCode(isoDate) {
+      if (!isoDate) return '0000000';
+      const jsDate = new Date(isoDate);
+      if (isNaN(jsDate.getTime())) return '0000000';
+
+      const dayIndex = jsDate.getDay(); // Sunday=0, ...
+      return dayOfOperationMap[dayIndex] || '0000000';
+    }
+  </script>
+</body>
+</html>
