@@ -31,6 +31,39 @@
       transition: all 0.2s ease-in-out;
     }
 
+     /* ----------------------------
+       MOVING WARNING BAR
+    ----------------------------- */
+    .warning-bar {
+      background-color: #FF0000; /* Red warning background */
+      color: #FFFFFF;           /* White text */
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      overflow: hidden;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 9999;            /* Ensure it stays on top */
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    }
+
+    .warning-bar span {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scrollText 20s linear infinite;
+      white-space: nowrap;
+    }
+
+    @keyframes scrollText {
+      from {
+        transform: translateX(100%);
+      }
+      to {
+        transform: translateX(-100%);
+      }
+    }
+
     /* ----------------------------
        NAVIGATION STYLING
     ----------------------------- */
@@ -169,6 +202,12 @@
   </style>
 </head>
 <body>
+   <!-- ----------------------------
+       MOVING WARNING BAR
+  ----------------------------- -->
+  <div class="warning-bar">
+    <span>TESTING PHASE USE WITH CAUTION. DOUBLE CHECK BEFORE SENDING.</span>
+  </div>
   <!-- ----------------------------
          NAVIGATION BAR
   ----------------------------- -->
