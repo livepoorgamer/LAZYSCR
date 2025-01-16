@@ -31,7 +31,7 @@
       transition: all 0.2s ease-in-out;
     }
 
-     /* ----------------------------
+    /* ----------------------------
        MOVING WARNING BAR
     ----------------------------- */
     .warning-bar {
@@ -72,6 +72,7 @@
       padding: 10px 20px;
       border-bottom: 2px solid #00FFD1; /* A futuristic accent color */
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+      margin-top: 50px; /* Space for the warning bar */
     }
     nav ul {
       list-style: none;
@@ -99,7 +100,7 @@
     ----------------------------- */
     .container {
       max-width: 600px;
-      margin: 40px auto; 
+      margin: 60px auto; /* Adjusted margin to accommodate the fixed warning bar */
       padding: 20px;
       background: #1F1F1F;
       border-radius: 12px;
@@ -202,14 +203,15 @@
   </style>
 </head>
 <body>
-   <!-- ----------------------------
+  <!-- ----------------------------
        MOVING WARNING BAR
   ----------------------------- -->
   <div class="warning-bar">
     <span>TESTING PHASE USE WITH CAUTION. DOUBLE CHECK BEFORE SENDING.</span>
   </div>
+
   <!-- ----------------------------
-         NAVIGATION BAR
+       NAVIGATION BAR
   ----------------------------- -->
   <nav>
     <ul>
@@ -225,7 +227,7 @@
   </nav>
   
   <!-- ----------------------------
-         MAIN CONTAINER
+       MAIN CONTAINER
   ----------------------------- -->
   <div class="container">
     <h1>Single Flight Formatter</h1>
@@ -244,7 +246,7 @@
       id="regInput" 
       placeholder="ENTER LEARJET REG HERE [E.G. MABJA]" />
     
- <!-- Disclaimer -->
+    <!-- Disclaimer -->
     <div class="disclaimer">
       DISCLAIMER: PLEASE CHECK DETAILS ARE CORRECT BEFORE SENDING
     </div>
@@ -287,7 +289,7 @@
   </div>
 
   <!-- ----------------------------
-         JAVASCRIPT
+       JAVASCRIPT
   ----------------------------- -->
   <script>
     // -------------- PART 1: FETCH emails.json FROM GITHUB PAGES --------------
@@ -295,8 +297,6 @@
 
     // Runs after DOM is loaded
     window.addEventListener("DOMContentLoaded", () => {
-      // If your emails.json file is stored in the /assets folder of your repo,
-      // use the relative path "assets/emails.json"
       fetch("assets/emails.json")
         .then(response => response.json())
         .then(data => {
@@ -332,7 +332,7 @@
         "Friday":    "0000500",
         "Saturday":  "0000060"
       };
-      return dayMapping[dayOfWeek] || "1000000"; 
+      return dayMapping[dayOfWeek] || "1000000";
     }
 
     // Parse user input
@@ -383,7 +383,7 @@
     }
 
     function getSelectedOption() {
-      return document.getElementById("dropdownMenu").value; // P, D, K, T, J
+      return document.getElementById("dropdownMenu").value; // P, D, K, T, J, etc.
     }
 
     // Returns "NEW SLOT" or "CANCEL SLOT"
@@ -434,12 +434,12 @@
       currentSlotType = getSlotType();          // "NEW SLOT" or "CANCEL SLOT"
       currentDepartureAirport = data.from;      // for subject line (sendEmail)
 
-      // Update headings (avoid error by ensuring these elements exist)
+      // Update headings
       document.getElementById("departureHeading").textContent = `Departure [${data.from}]`;
       document.getElementById("arrivalHeading").textContent = `Arrival [${data.to}]`;
 
       const { flight, from, to, date, departureTime, dayOfOperation } = data;
-      const option = getSelectedOption();       // P, D, K, T, J
+      const option = getSelectedOption();       // e.g. P, D, K, T, J
       const codePrefix = getCodePrefix(option);
       const reg = getAircraftReg();
 
@@ -452,7 +452,6 @@
           ? `SI ${currentSlotType} REQ ${from} // LEARJET REG: ${reg}`
           : `SI ${currentSlotType} REQ ${from}`;
 
-      // Notice the double `${date}` below may need to be refined if unintentional
       const output = `
 SCR 
 W24 
@@ -480,7 +479,7 @@ ${siLine}
       currentSlotType = getSlotType();
       currentArrivalAirport = data.to; // for subject line (sendEmail)
 
-      // Optional heading update
+      // Update headings
       document.getElementById("departureHeading").textContent = `Departure [${data.from}]`;
       document.getElementById("arrivalHeading").textContent = `Arrival [${data.to}]`;
 
@@ -524,7 +523,7 @@ ${siLine}
       currentDepartureAirport = data.from;
       currentArrivalAirport = data.to;
 
-      // Optional heading update
+      // Update headings
       document.getElementById("departureHeading").textContent = `Departure [${data.from}]`;
       document.getElementById("arrivalHeading").textContent = `Arrival [${data.to}]`;
 
