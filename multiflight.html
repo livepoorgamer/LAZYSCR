@@ -18,26 +18,22 @@
        BASIC STYLING
     ----------------------------- */
     body {
-      /* Futuristic, gradient background */
       background: linear-gradient(135deg, #131313 0%, #323232 100%);
       margin: 0;
       padding: 0;
-      font-family: 'Orbitron', sans-serif; /* Headings/futuristic text */
-      color: #fff; /* White text on dark background */
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
     }
-
-    /* Smooth transitions for hover effects, etc. */
     * {
       transition: all 0.2s ease-in-out;
     }
-
     /* ----------------------------
        NAVIGATION STYLING
     ----------------------------- */
     nav {
-      background: #1B1B1B; /* Dark nav bar */
+      background: #1B1B1B;
       padding: 10px 20px;
-      border-bottom: 2px solid #00FFD1; /* A futuristic accent color */
+      border-bottom: 2px solid #00FFD1;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
     }
     nav ul {
@@ -60,17 +56,16 @@
       color: #00FFD1;
       text-shadow: 0 0 5px #00FFD1;
     }
-
     /* ----------------------------
        CONTAINER STYLING
     ----------------------------- */
     .container {
-      max-width: 800px; /* Increased width for better multi-entry display */
-      margin: 40px auto; 
+      max-width: 800px;
+      margin: 40px auto;
       padding: 20px;
       background: #1F1F1F;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0.2); /* Slight neon glow */
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.2);
     }
     .container h1 {
       text-transform: uppercase;
@@ -85,7 +80,6 @@
       text-shadow: 0 0 5px rgba(0, 255, 209, 0.7);
       margin-bottom: 20px;
     }
-
     /* ----------------------------
        INPUTS & BUTTONS
     ----------------------------- */
@@ -102,8 +96,7 @@
       outline: none;
       resize: vertical;
     }
-    textarea::placeholder, 
-    input::placeholder {
+    textarea::placeholder, input::placeholder {
       color: #aaa;
     }
     button {
@@ -123,7 +116,6 @@
       transform: scale(1.05);
       box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
     }
-
     select {
       padding: 10px;
       margin: 5px 10px 5px 0;
@@ -140,7 +132,6 @@
     select:hover {
       box-shadow: 0 0 6px rgba(0, 255, 209, 0.5);
     }
-
     /* ----------------------------
        OUTPUT BOX
     ----------------------------- */
@@ -163,7 +154,6 @@
       margin-bottom: 10px;
       color: #00FFD1;
     }
-
     /* Additional Styling for Grouped Outputs */
     .scr-group {
       border: 1px solid #444;
@@ -183,7 +173,6 @@
       font-size: 12px;
       position: static;
     }
-
     /* ----------------------------
        MESSAGE STYLING
     ----------------------------- */
@@ -211,7 +200,6 @@
     <ul>
       <li><a href="index.html">Home</a></li>
       <li><a href="airport-search.html">Airport Search</a></li>
-      <!-- Add more navigation links here if needed -->
     </ul>
   </nav>
   
@@ -227,19 +215,14 @@
 
     <!-- User inputs -->
     <label for="userInput">Flight Information (One per line):</label>
-    <textarea 
-      id="userInput" 
-      placeholder="Format: PASTE FLIGHT LEG INFO HERE (one per line)"></textarea>
+    <textarea id="userInput" placeholder="Format: PASTE FLIGHT LEG INFO HERE (one per line)"></textarea>
 
     <label for="regInput">Learjet Registration:</label>
-    <input 
-      id="regInput" 
-      placeholder="ENTER LEARJET REG HERE [E.G. MABJA]" />
+    <input id="regInput" placeholder="ENTER LEARJET REG HERE [E.G. MABJA]" />
 
     <!-- Action buttons and dropdowns -->
     <div>
       <button id="formatBtn">Format SCR Messages</button>
-
       <!-- Dropdown with tooltips -->
       <select id="dropdownMenu">
         <option value="P" title="Non-revenue flight">P</option>
@@ -247,15 +230,13 @@
         <option value="K" title="Training flight">K</option>
         <option value="T" title="Training flight">T</option>
         <option value="J" title="Revenue (passenger)">J</option>
-        <option value="X" title="Technical flight">X</option> 
+        <option value="X" title="Technical flight">X</option>
       </select>
-
       <!-- Slot Type: NEW or CANCEL -->
       <select id="slotType">
         <option value="NEW">NEW SLOT</option>
         <option value="CANCEL">CANCEL SLOT</option>
       </select>
-
       <button id="sendAllBtn">Send All Emails</button>
     </div>
 
@@ -269,11 +250,7 @@
   <script>
     // -------------- PART 1: FETCH emails.json FROM GITHUB PAGES --------------
     let airportData = {}; // We'll store the emails.json data here
-
-    // Runs after DOM is loaded
     window.addEventListener("DOMContentLoaded", () => {
-      // If your emails.json file is stored in the /assets folder of your repo,
-      // use the relative path "assets/emails.json"
       fetch("assets/emails.json")
         .then(response => response.json())
         .then(data => {
@@ -285,19 +262,14 @@
           showError("Failed to load airport data. Email functionality may be limited.");
         });
     });
-
-    // Helper function: get email by airport code
     function getAirportEmail(airportCode) {
       if (airportData[airportCode]) {
         return airportData[airportCode].email;
       }
-      return "default@example.com"; // fallback if airport code not found
+      return "default@example.com";
     }
-
     // -------------- PART 2: EXISTING LOGIC / GLOBAL VARS --------------
-    let currentSlotType = ""; // e.g. "NEW SLOT" or "CANCEL SLOT"
-
-    // Maps day-of-week to operation code
+    let currentSlotType = "";
     function getDayOfOperation(dayOfWeek) {
       const dayMapping = {
         "Sunday":    "0000007",
@@ -310,29 +282,27 @@
       };
       return dayMapping[dayOfWeek] || "1000000"; 
     }
-
-    // Parse user input
     function parseInput(input) {
       const lines = input.trim().split("\n");
       const parsedEntries = [];
-
       for (let line of lines) {
         const parts = line.trim().split(" ");
-        if (parts.length !== 7) {
-          // Skip invalid lines
+        if (parts.length !== 7 && parts.length !== 8) {
           console.warn("Invalid input format for line:", line);
           continue;
         }
         const flightRaw = parts[0];
         const from = parts[1];
         const to = parts[2];
-        const date = parts[3].slice(0, 5);  // e.g. "07JAN"
-        const fullDate = parts[3];         // e.g. "07JAN2025"
+        const date = parts[3].slice(0, 5);
+        const fullDate = parts[3];
         const departureTime = parts[4];
         const arrivalTime = parts[5];
         const code = parts[6];
-
-        // Convert date to dayOfWeek
+        let aircraftType = null;
+        if (parts.length === 8) {
+          aircraftType = parts[7];
+        }
         const parsedDate = new Date(fullDate);
         if (isNaN(parsedDate)) {
           console.warn("Invalid date for line:", line);
@@ -340,21 +310,15 @@
         }
         const dayOfWeek = parsedDate.toLocaleDateString("en-US", { weekday: "long" });
         const dayOfOperation = getDayOfOperation(dayOfWeek);
-
-        // Flight prefix + remove trailing 'P'
         const flightPrefix = flightRaw.slice(0, 2);
         let flightNumber = flightRaw.slice(2);
         const flightDigits = flightNumber.match(/\d+/)?.[0] || "";
         let flightLetters = flightNumber.replace(/\d+/g, "");
-
-        // If flightLetters ends with 'P', remove it
         if (flightLetters.endsWith("P")) {
           flightLetters = flightLetters.slice(0, -1);
         }
-
         const paddedFlightDigits = flightDigits.padStart(3, "0");
         const flight = `${flightPrefix}${paddedFlightDigits}${flightLetters}`;
-
         parsedEntries.push({
           flight,
           from,
@@ -364,28 +328,23 @@
           departureTime,
           arrivalTime,
           code,
-          dayOfOperation
+          dayOfOperation,
+          aircraftType
         });
       }
-
       return parsedEntries;
     }
-
     function getSelectedOption() {
-      return document.getElementById("dropdownMenu").value; // P, D, K, T, J
+      return document.getElementById("dropdownMenu").value;
     }
-
-    // Returns "NEW SLOT" or "CANCEL SLOT"
     function getSlotType() {
       const val = document.getElementById("slotType").value;
       return val === "NEW" ? "NEW SLOT" : "CANCEL SLOT";
     }
-
     function getAircraftReg() {
       const regInput = document.getElementById("regInput").value.trim();
       return regInput || "[UNKNOWN REG]";
     }
-
     function getCodePrefix(option) {
       switch (option) {
         case "P":
@@ -400,84 +359,50 @@
           return "000";
       }
     }
-
-    // -------------- PART 3: DISPLAY AND SEND MULTIPLE SCR MESSAGES --------------
-    function showError(message) {
-      const errorDiv = document.getElementById("errorMessage");
-      errorDiv.textContent = message;
-      errorDiv.style.display = "block";
-      setTimeout(() => { errorDiv.style.display = "none"; }, 5000); // Clear after 5 seconds
-    }
-
-    function showSuccess(message) {
-      const successDiv = document.getElementById("successMessage");
-      successDiv.textContent = message;
-      successDiv.style.display = "block";
-      setTimeout(() => { successDiv.style.display = "none"; }, 5000); // Clear after 5 seconds
-    }
-
-    // Helper function to get the appropriate code based on the selected option
     function getOperationCode(option) {
       if (option === "D") {
         return "LJ4";
       }
       return "73H";
     }
-
+    // -------------- PART 3: DISPLAY AND SEND MULTIPLE SCR MESSAGES --------------
+    function showError(message) {
+      const errorDiv = document.getElementById("errorMessage");
+      errorDiv.textContent = message;
+      errorDiv.style.display = "block";
+      setTimeout(() => { errorDiv.style.display = "none"; }, 5000);
+    }
+    function showSuccess(message) {
+      const successDiv = document.getElementById("successMessage");
+      successDiv.textContent = message;
+      successDiv.style.display = "block";
+      setTimeout(() => { successDiv.style.display = "none"; }, 5000);
+    }
     function formatSCRMessages() {
       const input = document.getElementById("userInput").value;
       const parsedEntries = parseInput(input);
-
       if (parsedEntries.length === 0) {
         showError("No valid flight entries found. Please check your input.");
         return;
       }
-
       currentSlotType = getSlotType();
-
       const option = getSelectedOption();
       const codePrefix = getCodePrefix(option);
       const reg = getAircraftReg();
-
-      // Get the appropriate operation code based on the selected option
-      const operationCode = getOperationCode(option);
-
       const outputList = document.getElementById("outputList");
-      outputList.innerHTML = ""; // Clear previous outputs
-
-      // Group flights by airport
+      outputList.innerHTML = "";
       const airportGroups = {};
-
       parsedEntries.forEach((data) => {
         const { from, to } = data;
-
-        // Group for 'from' airport (departure)
         if (!airportGroups[from]) {
-          airportGroups[from] = {
-            airportCode: from,
-            flights: []
-          };
+          airportGroups[from] = { airportCode: from, flights: [] };
         }
-        airportGroups[from].flights.push({
-          type: 'departure',
-          data
-        });
-
-        // Group for 'to' airport (arrival)
+        airportGroups[from].flights.push({ type: 'departure', data });
         if (!airportGroups[to]) {
-          airportGroups[to] = {
-            airportCode: to,
-            flights: []
-          };
+          airportGroups[to] = { airportCode: to, flights: [] };
         }
-        airportGroups[to].flights.push({
-          type: 'arrival',
-          data
-        });
+        airportGroups[to].flights.push({ type: 'arrival', data });
       });
-
-      // Remove duplicate flights within the same airport
-      // (In case a flight is both departure and arrival at the same airport)
       Object.keys(airportGroups).forEach(airportCode => {
         const seen = new Set();
         airportGroups[airportCode].flights = airportGroups[airportCode].flights.filter(flightEntry => {
@@ -490,59 +415,60 @@
           }
         });
       });
-
-      // Iterate through each airport group to create SCR messages
       Object.values(airportGroups).forEach((group, groupIndex) => {
         const { airportCode, flights } = group;
-
-        // Initialize SCR message lines
         let scrLines = [];
         scrLines.push("SCR");
         scrLines.push("W24");
-        scrLines.push(getCurrentDate()); // Assuming SCR date is current date or can be modified
+        scrLines.push(getCurrentDate());
         scrLines.push(airportCode);
-
-        // Append each flight line
         flights.forEach(flightEntry => {
           const { type, data } = flightEntry;
-          const { flight, date, dayOfOperation, departureTime, arrivalTime, from, to } = data;
-
-          // Determine flight type
+          const { flight, date, dayOfOperation, departureTime, arrivalTime, from, to, aircraftType } = data;
           const flightType = currentSlotType === "CANCEL SLOT" ? "D" : "N";
-
-          // Build flight line based on type
+          let opCode;
+          if (aircraftType) {
+            if (option === "J") {
+              if (aircraftType === "7M8") {
+                opCode = "1977M8";
+              } else if (aircraftType === "738" || aircraftType === "73H") {
+                opCode = "18973H";
+              } else {
+                opCode = aircraftType;
+              }
+            } else {
+              opCode = (aircraftType === "738" ? "73H" : (aircraftType === "197" ? "7M8" : aircraftType));
+            }
+          } else {
+            opCode = getOperationCode(option);
+          }
           if (type === 'departure') {
-            scrLines.push(`${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}${operationCode} ${departureTime}${to} ${option}`);
+            if (option === "J") {
+              scrLines.push(`${flightType} ${flight} ${date}${date} ${dayOfOperation} ${opCode} ${departureTime}${to} ${option}`);
+            } else {
+              scrLines.push(`${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}${opCode} ${departureTime}${to} ${option}`);
+            }
           } else if (type === 'arrival') {
-            scrLines.push(`${flightType}${flight} ${date}${date} ${dayOfOperation} ${codePrefix}${operationCode} ${from}${arrivalTime} ${option}`);
+            if (option === "J") {
+              scrLines.push(`${flightType}${flight} ${date}${date} ${dayOfOperation} ${opCode} ${from}${arrivalTime} ${option}`);
+            } else {
+              scrLines.push(`${flightType}${flight} ${date}${date} ${dayOfOperation} ${codePrefix}${opCode} ${from}${arrivalTime} ${option}`);
+            }
           }
         });
-
-        // Append SI line
-        const siLine =
-          option === "D"
-            ? `SI ${currentSlotType} REQ ${airportCode} // LEARJET REG: ${reg}`
-            : `SI ${currentSlotType} REQ ${airportCode}`;
+        const siLine = option === "D"
+          ? `SI ${currentSlotType} REQ ${airportCode} // LEARJET REG: ${reg}`
+          : `SI ${currentSlotType} REQ ${airportCode}`;
         scrLines.push(siLine);
-
-        // Combine lines into a single string
         const scrOutput = scrLines.join("\n");
-
-        // Create SCR Group Element
         const scrGroup = document.createElement("div");
         scrGroup.classList.add("scr-group");
-
-        // Heading
         const headingDiv = document.createElement("div");
         headingDiv.classList.add("heading");
         headingDiv.textContent = `SCR [${airportCode}]`;
-
-        // SCR Output
         const outputDiv = document.createElement("div");
         outputDiv.classList.add("output-container");
         outputDiv.innerHTML = `<pre>${scrOutput}</pre>`;
-
-        // Send Button
         const sendButtonContainer = document.createElement("div");
         sendButtonContainer.classList.add("send-button-container");
         const sendBtn = document.createElement("button");
@@ -550,34 +476,22 @@
         sendBtn.dataset.airportCode = airportCode;
         sendBtn.dataset.groupIndex = groupIndex;
         sendButtonContainer.appendChild(sendBtn);
-
-        // Append all to SCR Group
         scrGroup.appendChild(headingDiv);
         scrGroup.appendChild(outputDiv);
         scrGroup.appendChild(sendButtonContainer);
-
-        // Store SCR Outputs in Data Attributes for Bulk Sending
         scrGroup.dataset.scrOutput = scrOutput;
         scrGroup.dataset.airportCode = airportCode;
-
-        // Append SCR Group to Output List
         outputList.appendChild(scrGroup);
       });
-
       showSuccess(`Formatted ${parsedEntries.length} flight(s) successfully.`);
-
-      // Attach Event Listeners to Newly Created Buttons
       attachSendButtonsListeners();
     }
-
-    // Helper function to get current date in DDMMM format (e.g., 07JAN)
     function getCurrentDate() {
       const dateObj = new Date();
       const day = String(dateObj.getDate()).padStart(2, '0');
       const month = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
       return `${day}${month}`;
     }
-
     function attachSendButtonsListeners() {
       const sendButtons = document.querySelectorAll(".scr-group .send-button-container button");
       sendButtons.forEach(button => {
@@ -588,71 +502,43 @@
         });
       });
     }
-
     function sendEmail(airportCode, scrOutput) {
       const subject = `${currentSlotType} REQ ${airportCode}`;
-
-      // Primary recipient from JSON (based on airportCode)
       const recipientEmail = getAirportEmail(airportCode);
-
-      // CC
       const ccEmail = "slotdesk@ryanair.com";
-
-      // Build mailto link
       const emailSubject = encodeURIComponent(subject);
       const emailBody = encodeURIComponent(scrOutput);
       const mailtoLink = `mailto:${recipientEmail}?cc=${encodeURIComponent(ccEmail)}&subject=${emailSubject}&body=${emailBody}`;
-
-      // Trigger email in a new tab/window
       window.open(mailtoLink, '_blank');
-
       showSuccess(`Email for ${airportCode} has been triggered.`);
     }
-
     function sendAllEmails() {
       const outputList = document.getElementById("outputList");
       const scrGroups = outputList.getElementsByClassName("scr-group");
-
       if (scrGroups.length === 0) {
         showError("No SCR messages to send. Please format first.");
         return;
       }
-
       let emailsSent = 0;
       const totalEmails = scrGroups.length;
-
       Array.from(scrGroups).forEach((scrGroup, index) => {
         const airportCode = scrGroup.dataset.airportCode;
         const scrOutput = scrGroup.dataset.scrOutput;
         const subject = `${currentSlotType} REQ ${airportCode}`;
-
-        // Primary recipient from JSON (based on airportCode)
         const recipientEmail = getAirportEmail(airportCode);
-
-        // CC
         const ccEmail = "slotdesk@ryanair.com";
-
-        // Encode subject and body
         const emailSubject = encodeURIComponent(subject);
         const emailBody = encodeURIComponent(scrOutput);
-
-        // Construct mailto link
         const mailtoLink = `mailto:${recipientEmail}?cc=${encodeURIComponent(ccEmail)}&subject=${emailSubject}&body=${emailBody}`;
-
-        // Open mailto link in a new window/tab with a slight delay
         setTimeout(() => {
           window.open(mailtoLink, '_blank');
           emailsSent += 1;
-
-          // Notify when all emails have been triggered
           if (emailsSent === totalEmails) {
             showSuccess("All SCR emails have been triggered.");
           }
-        }, index * 1000); // 1-second interval between each email
+        }, index * 1000);
       });
     }
-
-    // Attach Event Listeners
     document.getElementById("formatBtn").addEventListener("click", formatSCRMessages);
     document.getElementById("sendAllBtn").addEventListener("click", sendAllEmails);
   </script>
