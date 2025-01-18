@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Historic Log - SCR Messages</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" 
+    rel="stylesheet"
+  >
+
+  <style>
+    /* BASIC STYLING */
+    body {
+      background: linear-gradient(135deg, #131313 0%, #323232 100%);
+      margin: 0;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+    }
+    * {
+      transition: all 0.2s ease-in-out;
+    }
+    /* NAVIGATION */
+    nav {
+      background: #1B1B1B;
+      padding: 10px 20px;
+      border-bottom: 2px solid #00FFD1;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+    }
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+    nav li {
+      margin-right: 20px;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 16px;
+    }
+    nav a:hover {
+      color: #00FFD1;
+      text-shadow: 0 0 5px #00FFD1;
+    }
+    /* CONTAINER */
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #1F1F1F;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.2);
+    }
+    .container h1 {
+      text-transform: uppercase;
+      text-align: center;
+      color: #00FFD1;
+      text-shadow: 0 0 8px rgba(0, 255, 209, 0.7);
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    /* TABLE STYLING */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #444;
+      padding: 10px;
+      text-align: left;
+      font-family: 'Roboto Mono', monospace;
+    }
+    th {
+      background: #2E2E2E;
+    }
+    tbody tr:nth-child(even) {
+      background: #1A1A1A;
+    }
+    /* BUTTONS */
+    button {
+      padding: 5px 10px;
+      margin: 3px;
+      background: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0);
+    }
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
+    }
+    /* SCR Message Expandable Area */
+    .scr-message {
+      display: none;
+      white-space: pre-wrap;
+      background: #101010;
+      border: 1px dashed #00FFD1;
+      border-radius: 4px;
+      padding: 10px;
+      margin-top: 5px;
+      font-family: 'Roboto Mono', monospace;
+      color: #00FFD1;
+    }
+    /* Download CSV Button */
+    .download-btn {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="multi-flight-formatter.html">Multi Flight Formatter</a></li>
+      <li><a href="airport-search.html">Airport Search</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main Container -->
+  <div class="container">
+    <h1>Historic Log</h1>
+    <button class="download-btn" id="downloadCSV">Download as CSV</button>
+    <table id="logTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Flight Number</th>
+          <th>Airport</th>
+          <th>Type</th>
+          <th>Timestamp</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Dynamic rows will be inserted here -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Key for localStorage.
+    const STORAGE_KEY = "historicLog";
+
+    // Retrieve log data from localStorage. If none exists, return an empty array.
+    function getHistoricLog() {
+      const logData = localStorage.getItem(STORAGE_KEY);
+      return logData ? JSON.parse(logData) : [];
+    }
+
+    // Save log data back to localStorage.
+    function setHistoricLog(logEntries) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(logEntries));
+    }
+
+    // Function to add a log entry and update localStorage.
+    // This should be called from the page that creates SCR messages.
+    function addLogEntry(entry) {
+      const logEntries = getHistoricLog();
+      logEntries.push(entry);
+      setHistoricLog(logEntries);
+      populateLogTable();
+    }
+
+    // Populate the table with log entries from localStorage.
+    function populateLogTable() {
+      const tableBody = document.querySelector("#logTable tbody");
+      tableBody.innerHTML = ""; // Clear previous content
+
+      const historicLog = getHistoricLog();
+      historicLog.forEach((entry, index) => {
+        const tr = document.createElement("tr");
+
+        // Sequential Number.
+        const numberTd = document.createElement("td");
+        numberTd.textContent = index + 1;
+        tr.appendChild(numberTd);
+
+        // Flight Number.
+        const flightTd = document.createElement("td");
+        flightTd.textContent = entry.flightNumber;
+        tr.appendChild(flightTd);
+
+        // Airport.
+        const airportTd = document.createElement("td");
+        airportTd.textContent = entry.airport;
+        tr.appendChild(airportTd);
+
+        // Type (Arrival or Departure).
+        const typeTd = document.createElement("td");
+        typeTd.textContent = entry.direction; // expected values: "Arrival" or "Departure"
+        tr.appendChild(typeTd);
+
+        // Timestamp.
+        const timestampTd = document.createElement("td");
+        timestampTd.textContent = entry.timestamp;
+        tr.appendChild(timestampTd);
+
+        // Action button to toggle SCR Message.
+        const actionTd = document.createElement("td");
+        const toggleBtn = document.createElement("button");
+        toggleBtn.textContent = "Show SCR";
+        actionTd.appendChild(toggleBtn);
+        tr.appendChild(actionTd);
+        tableBody.appendChild(tr);
+
+        // Create a row below for the expanded SCR message (initially hidden).
+        const scrRow = document.createElement("tr");
+        const scrTd = document.createElement("td");
+        scrTd.colSpan = 6;
+        const scrMessageDiv = document.createElement("div");
+        scrMessageDiv.className = "scr-message";
+        scrMessageDiv.textContent = entry.scrMessage;
+        scrTd.appendChild(scrMessageDiv);
+        scrRow.appendChild(scrTd);
+        tableBody.appendChild(scrRow);
+
+        // Toggle the SCR message display.
+        toggleBtn.addEventListener("click", function() {
+          if (scrMessageDiv.style.display === "none" || scrMessageDiv.style.display === "") {
+            scrMessageDiv.style.display = "block";
+            toggleBtn.textContent = "Hide SCR";
+          } else {
+            scrMessageDiv.style.display = "none";
+            toggleBtn.textContent = "Show SCR";
+          }
+        });
+      });
+    }
+
+    // Convert the log data to CSV and trigger a download.
+    function downloadLogAsCSV() {
+      const historicLog = getHistoricLog();
+      // CSV header row.
+      const header = ["Number", "Flight Number", "Airport", "Type", "Timestamp", "SCR Message"];
+      const rows = [header];
+
+      historicLog.forEach((entry, index) => {
+        rows.push([
+          index + 1,
+          entry.flightNumber,
+          entry.airport,
+          entry.direction,
+          entry.timestamp,
+          '"' + entry.scrMessage.replace(/"/g, '""') + '"' // escape quotes.
+        ]);
+      });
+
+      // Convert rows array into CSV text.
+      const csvContent = rows.map(e => e.join(",")).join("\n");
+
+      // Create a blob and trigger a download.
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const downloadLink = document.createElement("a");
+      downloadLink.href = url;
+      downloadLink.download = "historic_scr_log.csv";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    }
+
+    // Attach event listener for Download CSV button.
+    document.getElementById("downloadCSV").addEventListener("click", downloadLogAsCSV);
+
+    // Populate the table when the page loads.
+    window.addEventListener("DOMContentLoaded", populateLogTable);
+
+    // Note:
+    // New log entries should be added from other parts of the application using the addLogEntry() function.
+  </script>
+</body>
+</html>
