@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Historic Log</title>
+  <title>Historic Log - SCR Messages</title>
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,6 +69,40 @@
       margin-top: 0;
       margin-bottom: 20px;
     }
+    /* Operator Name Inputs */
+    .operator-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      font-family: 'Roboto Mono', monospace;
+    }
+    .operator-container label {
+      margin-right: 10px;
+      font-size: 14px;
+    }
+    .operator-container input {
+      padding: 5px;
+      font-size: 14px;
+      border: 1px solid #444;
+      border-radius: 4px;
+      background: #2E2E2E;
+      color: #fff;
+      margin-right: 10px;
+    }
+    /* Search Bar */
+    .search-container {
+      margin-bottom: 20px;
+      font-family: 'Roboto Mono', monospace;
+    }
+    .search-container input {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 14px;
+      border: 1px solid #444;
+      border-radius: 4px;
+      background: #2E2E2E;
+      color: #fff;
+    }
     /* TABLE STYLING */
     table {
       width: 100%;
@@ -128,15 +162,28 @@
   <nav>
     <ul>
       <li><a href="index.html">Home</a></li>
-      <li><a href="multiflight.html">Multi Flight Formatter</a></li>
-      <li><a href="airport-search.html">Airport Search</a></li>
-      <li><a href="https://forms.gle/nXCQzWxCcH5B1uZd6">LOG ISSUES</a></li>
+      <li><a href="multi-flight-formatter.html">Multi Flight Formatter</a></li>
+      <li><a href="historic-log.html">Historic Log</a></li>
     </ul>
   </nav>
 
   <!-- Main Container -->
   <div class="container">
     <h1>Historic Log</h1>
+
+    <!-- Operator Name Inputs -->
+    <div class="operator-container">
+      <label for="firstName">Operator First Name:</label>
+      <input type="text" id="firstName" placeholder="First Name" />
+      <label for="lastName">Last Name:</label>
+      <input type="text" id="lastName" placeholder="Last Name" />
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+      <input type="text" id="searchBar" placeholder="Search flights..." />
+    </div>
+
     <button class="download-btn" id="downloadCSV">Download as CSV</button>
     <table id="logTable">
       <thead>
@@ -183,10 +230,16 @@
     function populateLogTable() {
       const tableBody = document.querySelector("#logTable tbody");
       tableBody.innerHTML = ""; // Clear previous content
-
       const historicLog = getHistoricLog();
+
       historicLog.forEach((entry, index) => {
         const tr = document.createElement("tr");
+        tr.dataset.searchText = (
+          entry.flightNumber + " " +
+          entry.airport + " " +
+          entry.direction + " " +
+          entry.timestamp
+        ).toLowerCase();
 
         // Sequential Number.
         const numberTd = document.createElement("td");
@@ -219,6 +272,7 @@
         toggleBtn.textContent = "Show SCR";
         actionTd.appendChild(toggleBtn);
         tr.appendChild(actionTd);
+
         tableBody.appendChild(tr);
 
         // Create a row below for the expanded SCR message (initially hidden).
@@ -245,13 +299,69 @@
       });
     }
 
+    // Search function: filters table rows based on search text.
+    function filterTable() {
+      const searchTerm = document.getElementById("searchBar").value.trim().toLowerCase();
+      const tableBody = document.querySelector("#logTable tbody");
+      const rows = tableBody.querySelectorAll("tr[data-search-text]");
+      
+      rows.forEach(row => {
+        if (row.dataset.searchText.includes(searchTerm)) {
+          row.style.display = "";
+          // Also show the next row (SCR message row) if it was expanded
+          const nextRow = row.nextElementSibling;
+          if(nextRow && nextRow.querySelector(".scr-message").style.display !== "none") {
+            nextRow.style.display = "";
+          }
+        } else {
+          row.style.display = "none";
+          // Hide the SCR message row as well
+          const nextRow = row.nextElementSibling;
+          if(nextRow) {
+            nextRow.style.display = "none";
+          }
+        }
+      });
+    }
+
     // Convert the log data to CSV and trigger a download.
     function downloadLogAsCSV() {
-      const historicLog = getHistoricLog();
-      // CSV header row.
-      const header = ["Number", "Flight Number", "Airport", "Type", "Timestamp", "SCR Message"];
-      const rows = [header];
+      const firstName = document.getElementById("firstName").value.trim();
+      const lastName  = document.getElementById("lastName").value.trim();
+      
+      if (!firstName || !lastName) {
+        alert("Please enter both your first and last name before downloading the CSV.");
+        return;
+      }
+      
+      // Create operator initials (first letter of first and last names, in uppercase).
+      const operatorInitials = firstName[0].toUpperCase() + lastName[0].toUpperCase();
+      
+      // Generate the current date and time in Zulu (UTC) in the format: YYYYMMDDTHHMMSSZ.
+      const now = new Date();
+      const year = now.getUTCFullYear();
+      const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(now.getUTCDate()).padStart(2, '0');
+      const hours = String(now.getUTCHours()).padStart(2, '0');
+      const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(now.getUTCSeconds()).padStart(2, '0');
+      const dateStr = `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+      
+      const filename = `${dateStr}_${operatorInitials}.csv`;
 
+      // Create CSV rows.
+      const historicLog = getHistoricLog();
+      const header = ["Number", "Flight Number", "Airport", "Type", "Timestamp", "SCR Message"];
+      const rows = [];
+      
+      // First row: Operator name.
+      rows.push([`Operator: ${firstName} ${lastName}`]);
+      // Add an empty row for separation.
+      rows.push([]);
+      // Add header row.
+      rows.push(header);
+      
+      // Add data rows.
       historicLog.forEach((entry, index) => {
         rows.push([
           index + 1,
@@ -262,28 +372,30 @@
           '"' + entry.scrMessage.replace(/"/g, '""') + '"' // escape quotes.
         ]);
       });
-
+      
       // Convert rows array into CSV text.
-      const csvContent = rows.map(e => e.join(",")).join("\n");
-
-      // Create a blob and trigger a download.
+      const csvContent = rows.map(row => row.join(",")).join("\n");
+      
+      // Create a blob and trigger the download with the generated file name.
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const downloadLink = document.createElement("a");
       downloadLink.href = url;
-      downloadLink.download = "historic_scr_log.csv";
+      downloadLink.download = filename;
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
     }
-
-    // Attach event listener for Download CSV button.
+    
+    // Attach event listener for the Download CSV button.
     document.getElementById("downloadCSV").addEventListener("click", downloadLogAsCSV);
-
+    // Attach event listener for search.
+    document.getElementById("searchBar").addEventListener("input", filterTable);
+    
     // Populate the table when the page loads.
     window.addEventListener("DOMContentLoaded", populateLogTable);
-
-    // Note:
+    
+    // NOTE:
     // New log entries should be added from other parts of the application using the addLogEntry() function.
   </script>
 </body>
