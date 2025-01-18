@@ -6,12 +6,12 @@
   <title>Historic Log - SCR Messages</title>
   
   <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link 
     href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" 
     rel="stylesheet"
-  >
+  />
 
   <style>
     /* BASIC STYLING */
@@ -205,30 +205,22 @@
   </div>
 
   <script>
-    // Shared localStorage key for the log entries.
+    // Shared localStorage key for log entries.
     const STORAGE_KEY = "historicLog";
 
-    // Retrieve log data from localStorage; return an empty array if none exists.
+    // Retrieve log data from localStorage.
     function getHistoricLog() {
       const logData = localStorage.getItem(STORAGE_KEY);
       return logData ? JSON.parse(logData) : [];
     }
 
-    // Save the updated log entries back to localStorage.
+    // Save log data to localStorage.
     function setHistoricLog(logEntries) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(logEntries));
     }
 
-    // In multiflight.html, each SCR message entry must be logged with the following structure:
-    // {
-    //   flightNumber: "AA012",
-    //   departureAirport: "JFK",
-    //   arrivalAirport: "LAX",
-    //   type: "Departure",  // or "Arrival"
-    //   timestamp: "2025-01-17 14:30:00",
-    //   scrMessage: "SCR message text..."
-    // }
-    // This function adds an entry to the log.
+    // This function is used by multiflight.html to log an SCR message.
+    // Make sure entries are logged with properties: flightNumber, departureAirport, arrivalAirport, type, timestamp, scrMessage.
     function addLogEntry(entry) {
       const logEntries = getHistoricLog();
       logEntries.push(entry);
@@ -236,17 +228,16 @@
       console.log("Log entry added:", entry);
     }
 
-    // For daily log filtering: return only entries from today.
+    // Return only today’s log entries.
     function getTodayLogEntries() {
       const logEntries = getHistoricLog();
-      // Today's date as "YYYY-MM-DD"
       const todayISO = new Date().toISOString().slice(0, 10);
       return logEntries.filter(entry => {
         return entry.timestamp && entry.timestamp.slice(0, 10) === todayISO;
       });
     }
 
-    // Populate the table with today's log entries.
+    // Populate the table with today’s entries.
     function populateLogTable() {
       const tableBody = document.querySelector("#logTable tbody");
       tableBody.innerHTML = "";
@@ -254,65 +245,65 @@
       const todayEntries = getTodayLogEntries();
       todayEntries.forEach((entry, index) => {
         const tr = document.createElement("tr");
-        // Combine searchable fields into one string (all in lowercase).
+        // Combine searchable fields into one string.
         tr.dataset.searchText = (
-          entry.flightNumber + " " +
-          entry.departureAirport + " " +
-          entry.arrivalAirport + " " +
-          entry.type + " " +
-          entry.timestamp
+          (entry.flightNumber || "") + " " +
+          (entry.departureAirport || "") + " " +
+          (entry.arrivalAirport || "") + " " +
+          (entry.type || "") + " " +
+          (entry.timestamp || "")
         ).toLowerCase();
-
+        
         // Number.
         const numberTd = document.createElement("td");
         numberTd.textContent = index + 1;
         tr.appendChild(numberTd);
-
+        
         // Flight Number.
         const flightTd = document.createElement("td");
-        flightTd.textContent = entry.flightNumber;
+        flightTd.textContent = entry.flightNumber || "";
         tr.appendChild(flightTd);
-
+        
         // Departure Airport.
         const depTd = document.createElement("td");
-        depTd.textContent = entry.departureAirport;
+        depTd.textContent = entry.departureAirport || "";
         tr.appendChild(depTd);
-
+        
         // Arrival Airport.
         const arrTd = document.createElement("td");
-        arrTd.textContent = entry.arrivalAirport;
+        arrTd.textContent = entry.arrivalAirport || "";
         tr.appendChild(arrTd);
-
+        
         // Type.
         const typeTd = document.createElement("td");
-        typeTd.textContent = entry.type;
+        typeTd.textContent = entry.type || "";
         tr.appendChild(typeTd);
-
+        
         // Timestamp.
         const timestampTd = document.createElement("td");
-        timestampTd.textContent = entry.timestamp;
+        timestampTd.textContent = entry.timestamp || "";
         tr.appendChild(timestampTd);
-
-        // Action (optional, e.g., to view full SCR message).
+        
+        // Action button (to show/hide full SCR message)
         const actionTd = document.createElement("td");
         const toggleBtn = document.createElement("button");
         toggleBtn.textContent = "Show SCR";
         actionTd.appendChild(toggleBtn);
         tr.appendChild(actionTd);
-
+        
         tableBody.appendChild(tr);
-
-        // SCR message row (initially hidden).
+        
+        // SCR message row (initially hidden)
         const scrRow = document.createElement("tr");
         const scrTd = document.createElement("td");
         scrTd.colSpan = 7;
         const scrDiv = document.createElement("div");
         scrDiv.className = "scr-message";
-        scrDiv.textContent = entry.scrMessage;
+        scrDiv.textContent = entry.scrMessage || "";
         scrTd.appendChild(scrDiv);
         scrRow.appendChild(scrTd);
         tableBody.appendChild(scrRow);
-
+        
         toggleBtn.addEventListener("click", function() {
           if (scrDiv.style.display === "none" || scrDiv.style.display === "") {
             scrDiv.style.display = "block";
@@ -325,7 +316,7 @@
       });
     }
 
-    // Filter the log table based on search input.
+    // Filter table rows based on search input.
     function filterTable() {
       const searchTerm = document.getElementById("searchBar").value.trim().toLowerCase();
       const tableBody = document.querySelector("#logTable tbody");
@@ -333,7 +324,6 @@
       rows.forEach(row => {
         if (row.dataset.searchText.includes(searchTerm)) {
           row.style.display = "";
-          // Also, if its following SCR message row is expanded, show it.
           const nextRow = row.nextElementSibling;
           if (nextRow && nextRow.querySelector(".scr-message").style.display !== "none") {
             nextRow.style.display = "";
@@ -348,7 +338,7 @@
       });
     }
 
-    // CSV Download Function.
+    // CSV download function.
     function downloadLogAsCSV() {
       const firstName = document.getElementById("firstName").value.trim();
       const lastName  = document.getElementById("lastName").value.trim();
@@ -358,10 +348,10 @@
         return;
       }
       
-      // Create operator initials (first letter from first and last names in uppercase).
+      // Operator initials.
       const operatorInitials = firstName[0].toUpperCase() + lastName[0].toUpperCase();
       
-      // Generate current date/time in Zulu (UTC) in format YYYYMMDDTHHMMSSZ.
+      // Current date/time in Zulu in format YYYYMMDDTHHMMSSZ.
       const now = new Date();
       const year = now.getUTCFullYear();
       const month = String(now.getUTCMonth() + 1).padStart(2, '0');
@@ -369,30 +359,26 @@
       const hours = String(now.getUTCHours()).padStart(2, '0');
       const minutes = String(now.getUTCMinutes()).padStart(2, '0');
       const seconds = String(now.getUTCSeconds()).padStart(2, '0');
-      const dateStr = `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+      const dateStr = `${year}${month}${day}${hours}${minutes}`;
       const filename = `${dateStr}_${operatorInitials}.csv`;
-
-      // Use only today's log entries.
+      
+      // Only today's entries.
       const todayEntries = getTodayLogEntries();
+      // CSV header.
       const header = ["Number", "Flight Number", "Departure Airport", "Arrival Airport", "Type", "Timestamp"];
       const rows = [];
-      
-      // First row: Operator's name.
       rows.push([`Operator: ${firstName} ${lastName}`]);
-      // Empty row for separation.
       rows.push([]);
-      // Header row.
       rows.push(header);
       
-      // Data rows.
       todayEntries.forEach((entry, index) => {
         rows.push([
           index + 1,
-          entry.flightNumber,
-          entry.departureAirport,
-          entry.arrivalAirport,
-          entry.type,
-          entry.timestamp
+          entry.flightNumber || "",
+          entry.departureAirport || "",
+          entry.arrivalAirport || "",
+          entry.type || "",
+          entry.timestamp || ""
         ]);
       });
       
