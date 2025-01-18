@@ -250,27 +250,33 @@
          JAVASCRIPT
   ----------------------------- -->
   <script>
-    // -------------- PART 1: FETCH emails.json FROM GITHUB PAGES --------------
-    let airportData = {}; // We'll store the emails.json data here
-    window.addEventListener("DOMContentLoaded", () => {
-      fetch("assets/emails.json")
-        .then(response => response.json())
-        .then(data => {
-          airportData = data;
-          console.log("Loaded airport data:", airportData);
-        })
-        .catch(error => {
-          console.error("Error loading emails.json:", error);
-          showError("Failed to load airport data. Email functionality may be limited.");
-        });
-    });
-    function getAirportEmail(airportCode) {
-      if (airportData[airportCode]) {
-        return airportData[airportCode].email;
-      }
-      return "default@example.com";
+    /*********************
+     * Logging Functions *
+     *********************/
+    // Use the same key for localStorage on all pages.
+    const STORAGE_KEY = "historicLog";
+
+    function getHistoricLog() {
+      const logData = localStorage.getItem(STORAGE_KEY);
+      return logData ? JSON.parse(logData) : [];
     }
-    // -------------- PART 2: EXISTING LOGIC / GLOBAL VARS --------------
+
+    function setHistoricLog(logEntries) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(logEntries));
+    }
+
+    // Call this function from multiflight.html to log an SCR message.
+    // It adds a log entry that the Historic Log page will later filter & display.
+    function addLogEntry(entry) {
+      const logEntries = getHistoricLog();
+      logEntries.push(entry);
+      setHistoricLog(logEntries);
+      console.log("Log entry added:", entry);
+    }
+
+    /***********************
+     * EXISTING LOGIC CODE *
+     ***********************/
     let currentSlotType = "";
     function getDayOfOperation(dayOfWeek) {
       const dayMapping = {
@@ -367,7 +373,10 @@
       }
       return "73H";
     }
-    // -------------- PART 3: DISPLAY AND SEND MULTIPLE SCR MESSAGES --------------
+
+    /***************************************************
+     * PART 3: DISPLAY, SEND, AND LOG SCR MESSAGES *
+     ***************************************************/
     function showError(message) {
       const errorDiv = document.getElementById("errorMessage");
       errorDiv.textContent = message;
@@ -484,6 +493,23 @@
         scrGroup.dataset.scrOutput = scrOutput;
         scrGroup.dataset.airportCode = airportCode;
         outputList.appendChild(scrGroup);
+
+        /****************************************
+         * NEW: Log this SCR message to localStorage
+         ****************************************/
+        // Create a simple log entry for this group.
+        // Here, we'll log a combined flightNumber (comma separated from all flights in the group)
+        // and a combined direction string. Adjust as needed.
+        const combinedFlightNumbers = flights.map(e => e.data.flight).join(", ");
+        const combinedDirections = flights.map(e => e.type).join("/");
+        const timestamp = new Date().toISOString().replace("T", " ").split(".")[0]; // format: "YYYY-MM-DD HH:MM:SS"
+        addLogEntry({
+          flightNumber: combinedFlightNumbers,
+          airport: airportCode,
+          direction: combinedDirections,
+          timestamp: timestamp,
+          scrMessage: scrOutput
+        });
       });
       showSuccess(`Formatted ${parsedEntries.length} flight(s) successfully.`);
       attachSendButtonsListeners();
