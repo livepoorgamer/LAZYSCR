@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Historic Log - SCR Messages</title>
   
   <!-- Google Fonts -->
@@ -139,7 +139,7 @@
       transform: scale(1.05);
       box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
     }
-    /* SCR MESSAGE Expandable Area */
+    /* SCR Message Expandable Area */
     .scr-message {
       display: none;
       white-space: pre-wrap;
@@ -158,7 +158,7 @@
   </style>
 </head>
 <body>
-  <!-- NAVIGATION -->
+  <!-- Navigation Bar -->
   <nav>
     <ul>
       <li><a href="index.html">Home</a></li>
@@ -167,10 +167,10 @@
     </ul>
   </nav>
 
-  <!-- MAIN CONTAINER -->
+  <!-- Main Container -->
   <div class="container">
     <h1>Historic Log</h1>
-    
+
     <!-- Operator Name Inputs -->
     <div class="operator-container">
       <label for="firstName">Operator First Name:</label>
@@ -185,7 +185,6 @@
     </div>
 
     <button class="download-btn" id="downloadCSV">Download as CSV</button>
-    
     <table id="logTable">
       <thead>
         <tr>
@@ -198,127 +197,140 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Data will be populated here -->
+        <!-- Dynamic rows will be inserted here -->
       </tbody>
     </table>
   </div>
 
-  <!-- Firebase Integration and Application Logic -->
-  <script type="module">
-    // Import Firebase SDK modules from Firebase v9.
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
+  <script>
+    // Key for localStorage.
+    const STORAGE_KEY = "historicLog";
 
-    // Your Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyDpyelGv_RVoXx3NtukDnyq9OjVR3gq2UE",
-      authDomain: "historic-log.firebaseapp.com",
-      databaseURL: "https://historic-log-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "historic-log",
-      storageBucket: "historic-log.appspot.com",
-      messagingSenderId: "391224921730",
-      appId: "1:391224921730:web:f68bce6cffc1f4b0072e9b"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Function to fetch log data from Firestore.
-    // We assume that when logs are added via your other pages, a field "date" is saved with the value in "YYYY-MM-DD" format.
-    async function fetchLogData() {
-      const tableBody = document.querySelector("#logTable tbody");
-      tableBody.innerHTML = "";
-      
-      // Get today's date as "YYYY-MM-DD"
-      const today = new Date().toISOString().slice(0,10);
-      
-      try {
-        const logsRef = collection(db, "historicLogs");
-        const q = query(logsRef, where("date", "==", today));
-        const querySnapshot = await getDocs(q);
-        let index = 0;
-        querySnapshot.forEach(doc => {
-          const entry = doc.data();
-          index++;
-          
-          const tr = document.createElement("tr");
-          // Create a searchable string from key fields.
-          tr.dataset.searchText = (
-            (entry.flightNumber || "") + " " +
-            (entry.airport || "") + " " +
-            (entry.direction || "") + " " +
-            (entry.timestamp || "")
-          ).toLowerCase();
-
-          const numberTd = document.createElement("td");
-          numberTd.textContent = index;
-          tr.appendChild(numberTd);
-
-          const flightTd = document.createElement("td");
-          flightTd.textContent = entry.flightNumber || "";
-          tr.appendChild(flightTd);
-
-          const airportTd = document.createElement("td");
-          airportTd.textContent = entry.airport || "";
-          tr.appendChild(airportTd);
-
-          const typeTd = document.createElement("td");
-          typeTd.textContent = entry.direction || "";
-          tr.appendChild(typeTd);
-
-          const timestampTd = document.createElement("td");
-          timestampTd.textContent = entry.timestamp || "";
-          tr.appendChild(timestampTd);
-
-          const actionTd = document.createElement("td");
-          const toggleBtn = document.createElement("button");
-          toggleBtn.textContent = "Show SCR";
-          actionTd.appendChild(toggleBtn);
-          tr.appendChild(actionTd);
-
-          tableBody.appendChild(tr);
-
-          // Extra row for SCR message (initially hidden)
-          const scrRow = document.createElement("tr");
-          const scrTd = document.createElement("td");
-          scrTd.colSpan = 6;
-          const scrDiv = document.createElement("div");
-          scrDiv.className = "scr-message";
-          scrDiv.textContent = entry.scrMessage || "";
-          scrTd.appendChild(scrDiv);
-          scrRow.appendChild(scrTd);
-          tableBody.appendChild(scrRow);
-
-          toggleBtn.addEventListener("click", () => {
-            if (!scrDiv.style.display || scrDiv.style.display === "none") {
-              scrDiv.style.display = "block";
-              toggleBtn.textContent = "Hide SCR";
-            } else {
-              scrDiv.style.display = "none";
-              toggleBtn.textContent = "Show SCR";
-            }
-          });
-        });
-      } catch (error) {
-        console.error("Error fetching logs:", error);
-      }
+    // Retrieve log data from localStorage. If none exists, return an empty array.
+    function getHistoricLog() {
+      const logData = localStorage.getItem(STORAGE_KEY);
+      return logData ? JSON.parse(logData) : [];
     }
 
-    // Search function filters table rows based on search input.
+    // Save log data back to localStorage.
+    function setHistoricLog(logEntries) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(logEntries));
+    }
+
+    // Filter log entries to only include entries from today.
+    function getTodayLogEntries() {
+      const logEntries = getHistoricLog();
+      // Get today's date in ISO format (YYYY-MM-DD).
+      const todayISO = new Date().toISOString().slice(0, 10);
+      
+      // Assuming each entry.timestamp is in "YYYY-MM-DD HH:MM:SS" format
+      return logEntries.filter(entry => {
+        return entry.timestamp && entry.timestamp.slice(0,10) === todayISO;
+      });
+    }
+
+    // Function to add a log entry and update localStorage.
+    // This should be called from the page that creates SCR messages.
+    function addLogEntry(entry) {
+      const logEntries = getHistoricLog();
+      logEntries.push(entry);
+      setHistoricLog(logEntries);
+      populateLogTable();
+    }
+
+    // Populate the table with today's log entries.
+    function populateLogTable() {
+      const tableBody = document.querySelector("#logTable tbody");
+      tableBody.innerHTML = ""; // Clear previous content
+
+      // Get only today's entries.
+      const todayEntries = getTodayLogEntries();
+
+      todayEntries.forEach((entry, index) => {
+        const tr = document.createElement("tr");
+        // Prepare a searchable text combining various fields.
+        tr.dataset.searchText = (
+          entry.flightNumber + " " +
+          entry.airport + " " +
+          entry.direction + " " +
+          entry.timestamp
+        ).toLowerCase();
+
+        // Sequential Number.
+        const numberTd = document.createElement("td");
+        numberTd.textContent = index + 1;
+        tr.appendChild(numberTd);
+
+        // Flight Number.
+        const flightTd = document.createElement("td");
+        flightTd.textContent = entry.flightNumber;
+        tr.appendChild(flightTd);
+
+        // Airport.
+        const airportTd = document.createElement("td");
+        airportTd.textContent = entry.airport;
+        tr.appendChild(airportTd);
+
+        // Type (Arrival or Departure).
+        const typeTd = document.createElement("td");
+        typeTd.textContent = entry.direction; // expected values: "Arrival" or "Departure"
+        tr.appendChild(typeTd);
+
+        // Timestamp.
+        const timestampTd = document.createElement("td");
+        timestampTd.textContent = entry.timestamp;
+        tr.appendChild(timestampTd);
+
+        // Action button to toggle SCR Message.
+        const actionTd = document.createElement("td");
+        const toggleBtn = document.createElement("button");
+        toggleBtn.textContent = "Show SCR";
+        actionTd.appendChild(toggleBtn);
+        tr.appendChild(actionTd);
+        tableBody.appendChild(tr);
+
+        // Create a row below for the expanded SCR message (initially hidden).
+        const scrRow = document.createElement("tr");
+        const scrTd = document.createElement("td");
+        scrTd.colSpan = 6;
+        const scrMessageDiv = document.createElement("div");
+        scrMessageDiv.className = "scr-message";
+        scrMessageDiv.textContent = entry.scrMessage;
+        scrTd.appendChild(scrMessageDiv);
+        scrRow.appendChild(scrTd);
+        tableBody.appendChild(scrRow);
+
+        // Toggle the SCR message display.
+        toggleBtn.addEventListener("click", function() {
+          if (scrMessageDiv.style.display === "none" || scrMessageDiv.style.display === "") {
+            scrMessageDiv.style.display = "block";
+            toggleBtn.textContent = "Hide SCR";
+          } else {
+            scrMessageDiv.style.display = "none";
+            toggleBtn.textContent = "Show SCR";
+          }
+        });
+      });
+    }
+
+    // Search function: filters table rows based on search text.
     function filterTable() {
       const searchTerm = document.getElementById("searchBar").value.trim().toLowerCase();
       const tableBody = document.querySelector("#logTable tbody");
+      // Get all rows that have a data-search-text attribute (these are the main rows).
       const rows = tableBody.querySelectorAll("tr[data-search-text]");
+      
       rows.forEach(row => {
         if (row.dataset.searchText.includes(searchTerm)) {
           row.style.display = "";
+          // Also show the next row (SCR message row) if it is expanded.
           const nextRow = row.nextElementSibling;
           if (nextRow && nextRow.querySelector(".scr-message").style.display !== "none") {
             nextRow.style.display = "";
           }
         } else {
           row.style.display = "none";
+          // Hide the SCR message row as well.
           const nextRow = row.nextElementSibling;
           if (nextRow) {
             nextRow.style.display = "none";
@@ -327,16 +339,20 @@
       });
     }
 
-    // CSV Download function (using localStorage as a fallback).
+    // Convert today's log data to CSV and trigger a download.
     function downloadLogAsCSV() {
       const firstName = document.getElementById("firstName").value.trim();
       const lastName  = document.getElementById("lastName").value.trim();
+      
       if (!firstName || !lastName) {
         alert("Please enter both your first and last name before downloading the CSV.");
         return;
       }
       
+      // Create operator initials (first letter of first and last names, in uppercase).
       const operatorInitials = firstName[0].toUpperCase() + lastName[0].toUpperCase();
+      
+      // Generate the current date and time in Zulu (UTC) in the format: YYYYMMDDTHHMMSSZ.
       const now = new Date();
       const year = now.getUTCFullYear();
       const month = String(now.getUTCMonth() + 1).padStart(2, '0');
@@ -345,31 +361,39 @@
       const minutes = String(now.getUTCMinutes()).padStart(2, '0');
       const seconds = String(now.getUTCSeconds()).padStart(2, '0');
       const dateStr = `${year}${month}${day}${hours}${minutes}`;
+      
       const filename = `${dateStr}_${operatorInitials}.csv`;
-      
-      // Use localStorage as fallback (if needed).
-      const todayEntries = getHistoricLog().filter(entry => {
-        return entry.timestamp && entry.timestamp.slice(0,10) === new Date().toISOString().slice(0,10);
-      });
-      
+
+      // Get today's log entries.
+      const todayEntries = getTodayLogEntries();
+
+      // Create CSV rows.
       const header = ["Number", "Flight Number", "Airport", "Type", "Timestamp", "SCR Message"];
       const rows = [];
+      
+      // First row: Operator name.
       rows.push([`Operator: ${firstName} ${lastName}`]);
-      rows.push([]); // Empty line
+      // Add an empty row for separation.
+      rows.push([]);
+      // Add header row.
       rows.push(header);
       
+      // Add data rows.
       todayEntries.forEach((entry, index) => {
         rows.push([
           index + 1,
-          entry.flightNumber || "",
-          entry.airport || "",
-          entry.direction || "",
-          entry.timestamp || "",
-          '"' + entry.scrMessage.replace(/"/g, '""') + '"'
+          entry.flightNumber,
+          entry.airport,
+          entry.direction,
+          entry.timestamp,
+          '"' + entry.scrMessage.replace(/"/g, '""') + '"' // escape quotes.
         ]);
       });
       
+      // Convert rows array into CSV text.
       const csvContent = rows.map(row => row.join(",")).join("\n");
+      
+      // Create a blob and trigger the download with the generated file name.
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const downloadLink = document.createElement("a");
@@ -379,11 +403,17 @@
       downloadLink.click();
       document.body.removeChild(downloadLink);
     }
-
-    // Attach event listeners.
+    
+    // Attach event listener for the Download CSV button.
     document.getElementById("downloadCSV").addEventListener("click", downloadLogAsCSV);
+    // Attach event listener for the search bar.
     document.getElementById("searchBar").addEventListener("input", filterTable);
-    window.addEventListener("DOMContentLoaded", fetchLogData);
+    
+    // Populate the table when the page loads.
+    window.addEventListener("DOMContentLoaded", populateLogTable);
+    
+    // NOTE:
+    // New log entries should be added from other parts of the application using the addLogEntry() function.
   </script>
 </body>
 </html>
