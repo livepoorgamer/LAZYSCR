@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Single Flight Formatter</title>
   
-  <!-- Google Fonts: Orbitron for futuristic headings, Roboto Mono for monospaced output -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link 
@@ -14,26 +14,75 @@
   >
 
   <style>
-    /* ----------------------------
-       BASIC STYLING
-    ----------------------------- */
+    /********************************************
+     1) THEME VARIABLES: Light by default
+     ********************************************/
+    :root {
+      /* Light Theme */
+      --body-bg: #f5f5f5;
+      --text-color: #333;
+      --nav-bg: #fff;
+      --nav-text-color: #333;
+      --primary-color: #00FFD1;
+      --secondary-color: #007BFF;
+      --warning-bg: #ff0000;
+      --warning-text: #fff;
+      --container-bg: #fff;
+      --border-color: #00FFD1;
+      --input-bg: #fff;
+      --input-border: #ccc;
+      --output-bg: #f9f9f9;
+      --output-border: #00FFD1;
+      --button-bg-gradient: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      --button-text-color: #fff;
+    }
+
+    /* Dark Theme Override */
+    body.dark-mode {
+      --body-bg: #1a1a1a;
+      --text-color: #eaeaea;
+      --nav-bg: #2a2a2a;
+      --nav-text-color: #f5f5f5;
+      --warning-bg: #cc0000;
+      --warning-text: #fff;
+      --container-bg: #2e2e2e;
+      --border-color: #00ffd1;
+      --input-bg: #3a3a3a;
+      --input-border: #555555;
+      --output-bg: #1a1a1a;
+      --output-border: #00ffd1;
+      --button-bg-gradient: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      --button-text-color: #1a1a1a;
+    }
+
+    /********************************************
+     2) GLOBAL RESET & SMOOTH TRANSITIONS
+     ********************************************/
+    * {
+      box-sizing: border-box;
+      transition: all 0.2s ease-in-out;
+    }
     body {
-      background: linear-gradient(135deg, #131313 0%, #323232 100%);
       margin: 0;
       padding: 0;
       font-family: 'Orbitron', sans-serif;
-      color: #fff;
+      background-color: var(--body-bg);
+      color: var(--text-color);
     }
-    * {
-      transition: all 0.2s ease-in-out;
+    a {
+      color: var(--text-color);
+      text-decoration: none;
+    }
+    a:hover {
+      color: var(--secondary-color);
     }
 
-    /* ----------------------------
-       MOVING WARNING BAR
-    ----------------------------- */
+    /********************************************
+     3) MOVING WARNING BAR
+     ********************************************/
     .warning-bar {
-      background-color: #FF0000;
-      color: #FFFFFF;
+      background-color: var(--warning-bg);
+      color: var(--warning-text);
       font-size: 16px;
       font-weight: bold;
       text-align: center;
@@ -55,200 +104,255 @@
       to   { transform: translateX(-100%); }
     }
 
-    /* ----------------------------
-       NAVIGATION STYLING
-    ----------------------------- */
+    /********************************************
+     4) NAVIGATION BAR
+     ********************************************/
     nav {
-      background: #1B1B1B;
+      background-color: var(--nav-bg);
+      color: var(--nav-text-color);
       padding: 10px 20px;
-      border-bottom: 2px solid #00FFD1;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-      margin-top: 50px;
+      border-bottom: 2px solid var(--border-color);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-top: 50px; /* to offset the warning bar */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     nav ul {
       list-style: none;
       margin: 0;
       padding: 0;
       display: flex;
-      justify-content: flex-start;
       align-items: center;
     }
-    nav li { margin-right: 20px; }
+    nav li {
+      margin-right: 20px;
+    }
     nav a {
-      color: #fff;
+      color: var(--nav-text-color);
       text-decoration: none;
       font-size: 16px;
     }
     nav a:hover {
-      color: #00FFD1;
-      text-shadow: 0 0 5px #00FFD1;
+      color: var(--secondary-color);
+    }
+    /* Theme Toggle */
+    .theme-switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .theme-switch input {
+      appearance: none;
+      width: 40px;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 20px;
+      position: relative;
+      outline: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .theme-switch input::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background-color: #fff;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+    .theme-switch input:checked {
+      background-color: var(--secondary-color);
+    }
+    .theme-switch input:checked::before {
+      transform: translateX(20px);
     }
 
-    /* ----------------------------
-       CONTAINER STYLING
-    ----------------------------- */
+    /********************************************
+     5) MAIN CONTAINER
+     ********************************************/
     .container {
       max-width: 600px;
       margin: 60px auto;
       padding: 20px;
-      background: #1F1F1F;
+      background-color: var(--container-bg);
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0.2);
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.1);
     }
     .container h1 {
       text-transform: uppercase;
       text-align: center;
-      color: #00FFD1;
-      text-shadow: 0 0 8px rgba(0, 255, 209, 0.7);
+      color: var(--secondary-color);
       margin-top: 0;
       margin-bottom: 20px;
     }
     .container h2 {
-      color: #00FFD1;
-      text-shadow: 0 0 5px rgba(0, 255, 209, 0.7);
+      color: var(--primary-color);
       margin-bottom: 20px;
     }
 
-    /* ----------------------------
-       INPUTS & BUTTONS
-    ----------------------------- */
+    /********************************************
+     6) INPUTS, TEXTAREAS, SELECTS, BUTTONS
+     ********************************************/
     textarea, input {
       width: 100%;
       margin-bottom: 10px;
       padding: 10px;
-      background: #2E2E2E;
-      color: #FFF;
-      border: 1px solid #444;
+      background: var(--input-bg);
+      color: var(--text-color);
+      border: 1px solid var(--input-border);
       border-radius: 4px;
       font-family: 'Roboto Mono', monospace;
       font-size: 14px;
       outline: none;
       resize: vertical;
     }
-    textarea::placeholder, input::placeholder { color: #aaa; }
     button {
       padding: 10px 20px;
       margin: 5px 10px 5px 0;
-      background: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
-      color: #fff;
+      background: var(--button-bg-gradient);
+      color: var(--button-text-color);
       border: none;
       border-radius: 4px;
       cursor: pointer;
       font-size: 14px;
       text-transform: uppercase;
       font-weight: 700;
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0);
     }
     button:hover {
       transform: scale(1.05);
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
+      box-shadow: 0 0 8px rgba(0, 255, 209, 0.3);
     }
     select {
       padding: 10px;
       margin: 5px 10px 5px 0;
-      border: 1px solid #444;
+      border: 1px solid var(--input-border);
       border-radius: 4px;
-      background: #2E2E2E;
-      color: #fff;
+      background: var(--input-bg);
+      color: var(--text-color);
       font-size: 14px;
       outline: none;
       cursor: pointer;
       font-family: 'Orbitron', sans-serif;
       text-transform: uppercase;
     }
-    select:hover { box-shadow: 0 0 6px rgba(0, 255, 209, 0.5); }
+    select:hover {
+      box-shadow: 0 0 6px rgba(0, 255, 209, 0.2);
+    }
 
-    /* ----------------------------
-       OUTPUT BOX
-    ----------------------------- */
+    /********************************************
+     7) OUTPUT BOX
+     ********************************************/
     .output-container {
       margin-top: 20px;
       padding: 20px;
-      background: #101010;
-      border: 1px dashed #00FFD1;
+      background: var(--output-bg);
+      border: 1px dashed var(--output-border);
       border-radius: 4px;
       white-space: pre-wrap;
       font-family: 'Roboto Mono', monospace;
-      color: #00FFD1;
+      color: var(--primary-color);
       line-height: 1.5;
     }
     .heading {
       text-transform: uppercase;
       margin-bottom: 10px;
-      color: #00FFD1;
+      color: var(--primary-color);
     }
 
-    /* Hide output containers by default */
+    /* By default, hide these output containers */
     #departureContainer,
-    #arrivalContainer { display: none; }
+    #arrivalContainer {
+      display: none;
+    }
+
+    /* Disclaimer text, if needed */
+    .disclaimer {
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      color: var(--text-color);
+      opacity: 0.8;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    /********************************************
+     8) MEDIA QUERIES (Mobile Adjustments)
+     ********************************************/
+    @media (max-width: 600px) {
+      nav ul {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .theme-switch {
+        margin-top: 10px;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- ----------------------------
-       MOVING WARNING BAR
-  ----------------------------- -->
+  <!-- 1) MOVING WARNING BAR -->
   <div class="warning-bar">
     <span>TESTING PHASE USE WITH CAUTION. DOUBLE CHECK BEFORE SENDING.</span>
   </div>
 
-  <!-- ----------------------------
-       NAVIGATION BAR
-  ----------------------------- -->
+  <!-- 2) NAVIGATION BAR -->
   <nav>
     <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="airport-search.html">Airport Search</a></li>
-      <li><a href="multiflight.html">Multi Formatter</a></li>
-      <li><a href="scrchangerequest.html">SCR CHANGE REQUEST</a></li>
-      <li><a href="gcrformat.html">EXPERIMENTAL FEATURE 1</a></li>
+      <li><a href="index.html">Single Flight</a></li>
+      <li><a href="multiflight.html">Multi Flight</a></li>
+      <li><a href="scrchangerequest.html">SCR Change</a></li>
       <li><a href="historic-log.html">Historic Log</a></li>
-      <li><a href="https://forms.gle/nXCQzWxCcH5B1uZd6">LOG ISSUES</a></li>
+      <li><a href="airport-search.html">Airport DB</a></li>
+      <li><a href="gcrformat.html">GCR Format</a></li>
+      <li><a href="https://forms.gle/nXCQzWxCcH5B1uZd6">Log Issues</a></li>
     </ul>
+    <!-- Theme Switch -->
+    <div class="theme-switch">
+      <label for="themeToggle">Dark Mode</label>
+      <input type="checkbox" id="themeToggle" aria-label="Toggle Dark Mode">
+    </div>
   </nav>
   
-  <!-- ----------------------------
-       MAIN CONTAINER
-  ----------------------------- -->
+  <!-- 3) MAIN CONTAINER -->
   <div class="container">
     <h1>Single Flight Formatter</h1>
-
-    <!-- Added headings for JS updates -->
     <h2 id="departureHeading"></h2>
     <h2 id="arrivalHeading"></h2>
 
-    <!-- User inputs -->
+    <!-- User Input -->
     <textarea id="userInput" placeholder="Format: PASTE FLIGHT LEG INFO HERE"></textarea>
     <input id="regInput" placeholder="ENTER LEARJET REG HERE [E.G. MABJA]" />
-    
+
     <!-- Disclaimer -->
-    <div class="disclaimer">
-      DISCLAIMER: PLEASE CHECK DETAILS ARE CORRECT BEFORE SENDING
-    </div>
-    
-    <!-- Action buttons and dropdowns -->
+    <div class="disclaimer">DISCLAIMER: PLEASE CHECK DETAILS ARE CORRECT BEFORE SENDING</div>
+
+    <!-- Buttons / Dropdowns -->
     <div>
       <button onclick="formatDeparture()">Departure</button>
       <button onclick="formatArrival()">Arrival</button>
       <button onclick="formatBoth()">Both</button>
 
-      <!-- Dropdown with tooltips -->
       <select id="dropdownMenu">
         <option value="P" title="Non-revenue flight">P</option>
         <option value="D" title="General Aviation">D</option>
         <option value="K" title="Training flight">K</option>
         <option value="T" title="Training flight">T</option>
         <option value="J" title="Revenue (passenger)">J</option>
-        <option value="X" title="Technical flight">X</option>  
+        <option value="X" title="Technical flight">X</option>
       </select>
 
-      <!-- Slot Type: NEW or CANCEL -->
       <select id="slotType">
         <option value="NEW">NEW SLOT</option>
         <option value="CANCEL">CANCEL SLOT</option>
       </select>
     </div>
 
-    <!-- Separate containers for Departure and Arrival outputs -->
+    <!-- Output Containers -->
     <div id="departureContainer" class="output-container">
       <div class="heading">Departure:</div>
       <pre id="departureOutput"></pre>
@@ -262,11 +366,41 @@
     </div>
   </div>
 
-  <!-- ----------------------------
-       JAVASCRIPT
-  ----------------------------- -->
+  <!-- 4) JAVASCRIPT -->
   <script>
-    // -------------- PART 1: FETCH emails.json FROM GITHUB PAGES --------------
+    /******************************************
+     THEME TOGGLE LOGIC
+    ******************************************/
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    applyTheme(savedTheme);
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        body.classList.add('dark-mode');
+        themeToggle.checked = true;
+      } else {
+        body.classList.remove('dark-mode');
+        themeToggle.checked = false;
+      }
+    }
+
+    themeToggle.addEventListener('change', () => {
+      if (themeToggle.checked) {
+        localStorage.setItem('theme', 'dark');
+        applyTheme('dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+        applyTheme('light');
+      }
+    });
+
+    /******************************************
+     1) FETCH emails.json FROM GITHUB PAGES
+    ******************************************/
     let airportData = {};
     window.addEventListener("DOMContentLoaded", () => {
       fetch("assets/emails.json")
@@ -283,15 +417,16 @@
       if (airportData[airportCode]) {
         return airportData[airportCode].email;
       }
-      return "default@example.com";
+      return "slotdesk@ryanair.com";
     }
 
-    // -------------- PART 2: EXISTING LOGIC / GLOBAL VARS --------------
+    /******************************************
+     2) EXISTING LOGIC
+    ******************************************/
     let currentSlotType = "";
     let currentDepartureAirport = "";
     let currentArrivalAirport = "";
 
-    // Maps day-of-week to operation code
     function getDayOfOperation(dayOfWeek) {
       const dayMapping = {
         "Sunday":    "0000007",
@@ -305,8 +440,6 @@
       return dayMapping[dayOfWeek] || "1000000";
     }
 
-    // Parse user input.
-    // Accepts 7 parts (legacy) or 8 parts (if an aircraft type is provided)
     function parseInput(input) {
       const parts = input.trim().split(" ");
       if (parts.length !== 7 && parts.length !== 8) {
@@ -324,9 +457,11 @@
       if (parts.length === 8) {
         aircraftType = parts[7];
       }
+
       const parsedDate = new Date(fullDate);
       const dayOfWeek = parsedDate.toLocaleDateString("en-US", { weekday: "long" });
       const dayOfOperation = getDayOfOperation(dayOfWeek);
+
       const flightPrefix = flightRaw.slice(0, 2);
       let flightNumber = flightRaw.slice(2);
       const flightDigits = flightNumber.match(/\d+/)?.[0] || "";
@@ -336,6 +471,7 @@
       }
       const paddedFlightDigits = flightDigits.padStart(3, "0");
       const flight = `${flightPrefix}${paddedFlightDigits}${flightLetters}`;
+
       return {
         flight,
         from,
@@ -353,7 +489,6 @@
     function getSelectedOption() {
       return document.getElementById("dropdownMenu").value;
     }
-    // Returns "NEW SLOT" or "CANCEL SLOT"
     function getSlotType() {
       const val = document.getElementById("slotType").value;
       return val === "NEW" ? "NEW SLOT" : "CANCEL SLOT";
@@ -377,32 +512,27 @@
       }
     }
 
-    // Helper function for the single flight formatter.
-    // Returns the proper op code based on the default value and the (optional) aircraftType.
     function getOpCodeSingle(defaultOp, aircraftType) {
       const option = getSelectedOption();
-      // Use the provided aircraftType if present; otherwise, fallback to defaultOp.
-      const op = aircraftType ? aircraftType : defaultOp;
       if (option === "J") {
-        if (op === "7M8") {
+        if (aircraftType === "7M8") {
           return "1977M8";
-        } else if (op === "738" || op === "73H") {
+        } else if (aircraftType === "738" || aircraftType === "73H") {
           return "18973H";
         } else {
-          return op;
+          return aircraftType || defaultOp;
         }
       } else {
         if (aircraftType) {
-          if (op === "738") return "00073H";
-          if (op === "7M8") return "0007M8";
-          return op;
+          if (aircraftType === "738") return "00073H";
+          if (aircraftType === "7M8") return "0007M8";
+          return aircraftType; 
         } else {
           return getCodePrefix(option) + defaultOp;
         }
       }
     }
 
-    // Hide both output containers
     function hideAllContainers() {
       document.getElementById("departureContainer").style.display = "none";
       document.getElementById("arrivalContainer").style.display = "none";
@@ -410,7 +540,9 @@
       document.getElementById("arrivalOutput").textContent = "";
     }
 
-    // -------------- DEPARTURE FORMAT --------------
+    /******************************************
+     3) DEPARTURE FORMAT
+    ******************************************/
     function formatDeparture() {
       hideAllContainers();
       const input = document.getElementById("userInput").value;
@@ -421,18 +553,20 @@
       }
       currentSlotType = getSlotType();
       currentDepartureAirport = data.from;
+
       document.getElementById("departureHeading").textContent = `Departure [${data.from}]`;
       document.getElementById("arrivalHeading").textContent = `Arrival [${data.to}]`;
+
       const { flight, from, to, date, departureTime, dayOfOperation, aircraftType } = data;
       const option = getSelectedOption();
-      // Get the op code using our helper; default op is "73H"
       const opCode = getOpCodeSingle("73H", aircraftType);
       const reg = getAircraftReg();
       const flightType = currentSlotType === "CANCEL SLOT" ? "D" : "N";
-      const siLine =
-        option === "D"
-          ? `SI ${currentSlotType} REQ ${from} // LEARJET REG: ${reg}`
-          : `SI ${currentSlotType} REQ ${from}`;
+
+      const siLine = option === "D"
+        ? `SI ${currentSlotType} REQ ${from} // LEARJET REG: ${reg}`
+        : `SI ${currentSlotType} REQ ${from}`;
+
       const output = `
 SCR 
 W24 
@@ -441,11 +575,14 @@ ${from}
 ${flightType} ${flight} ${date}${date} ${dayOfOperation} ${opCode} ${departureTime}${to} ${option} 
 ${siLine}
       `.trim();
+
       document.getElementById("departureOutput").textContent = output;
       document.getElementById("departureContainer").style.display = "block";
     }
 
-    // -------------- ARRIVAL FORMAT --------------
+    /******************************************
+     4) ARRIVAL FORMAT
+    ******************************************/
     function formatArrival() {
       hideAllContainers();
       const input = document.getElementById("userInput").value;
@@ -456,17 +593,20 @@ ${siLine}
       }
       currentSlotType = getSlotType();
       currentArrivalAirport = data.to;
+
       document.getElementById("departureHeading").textContent = `Departure [${data.from}]`;
       document.getElementById("arrivalHeading").textContent = `Arrival [${data.to}]`;
+
       const { flight, from, to, date, arrivalTime, dayOfOperation, aircraftType } = data;
       const option = getSelectedOption();
       const opCode = getOpCodeSingle("73H", aircraftType);
       const reg = getAircraftReg();
       const flightType = currentSlotType === "CANCEL SLOT" ? "D" : "N";
-      const siLine =
-        option === "D"
-          ? `SI ${currentSlotType} REQ ${to} // LEARJET REG: ${reg}`
-          : `SI ${currentSlotType} REQ ${to}`;
+
+      const siLine = option === "D"
+        ? `SI ${currentSlotType} REQ ${to} // LEARJET REG: ${reg}`
+        : `SI ${currentSlotType} REQ ${to}`;
+
       const output = `
 SCR 
 W24 
@@ -475,11 +615,14 @@ ${to}
 ${flightType}${flight} ${date}${date} ${dayOfOperation} ${opCode} ${from}${arrivalTime} ${option} 
 ${siLine}
       `.trim();
+
       document.getElementById("arrivalOutput").textContent = output;
       document.getElementById("arrivalContainer").style.display = "block";
     }
 
-    // -------------- BOTH FORMAT --------------
+    /******************************************
+     5) BOTH FORMAT
+    ******************************************/
     function formatBoth() {
       hideAllContainers();
       const input = document.getElementById("userInput").value;
@@ -491,18 +634,20 @@ ${siLine}
       currentSlotType = getSlotType();
       currentDepartureAirport = data.from;
       currentArrivalAirport = data.to;
+
       document.getElementById("departureHeading").textContent = `Departure [${data.from}]`;
       document.getElementById("arrivalHeading").textContent = `Arrival [${data.to}]`;
+
       const { flight, from, to, date, departureTime, arrivalTime, dayOfOperation, aircraftType } = data;
       const option = getSelectedOption();
       const opCode = getOpCodeSingle("73H", aircraftType);
       const reg = getAircraftReg();
       const flightType = currentSlotType === "CANCEL SLOT" ? "D" : "N";
-      // DEPARTURE part
-      const departureSiLine =
-        option === "D"
-          ? `SI ${currentSlotType} REQ ${from} // LEARJET REG: ${reg}`
-          : `SI ${currentSlotType} REQ ${from}`;
+
+      const departureSiLine = option === "D"
+        ? `SI ${currentSlotType} REQ ${from} // LEARJET REG: ${reg}`
+        : `SI ${currentSlotType} REQ ${from}`;
+
       const departureOutputStr = `
 SCR 
 W24 
@@ -511,11 +656,11 @@ ${from}
 ${flightType} ${flight} ${date}${date} ${dayOfOperation} ${opCode} ${departureTime}${to} ${option} 
 ${departureSiLine}
       `.trim();
-      // ARRIVAL part
-      const arrivalSiLine =
-        option === "D"
-          ? `SI ${currentSlotType} REQ ${to} // LEARJET REG: ${reg}`
-          : `SI ${currentSlotType} REQ ${to}`;
+
+      const arrivalSiLine = option === "D"
+        ? `SI ${currentSlotType} REQ ${to} // LEARJET REG: ${reg}`
+        : `SI ${currentSlotType} REQ ${to}`;
+
       const arrivalOutputStr = `
 SCR 
 W24 
@@ -524,17 +669,21 @@ ${to}
 ${flightType}${flight} ${date}${date} ${dayOfOperation} ${opCode} ${from}${arrivalTime} ${option} 
 ${arrivalSiLine}
       `.trim();
+
       document.getElementById("departureOutput").textContent = departureOutputStr;
       document.getElementById("arrivalOutput").textContent = arrivalOutputStr;
       document.getElementById("departureContainer").style.display = "block";
       document.getElementById("arrivalContainer").style.display = "block";
     }
 
-    // -------------- SEND EMAIL --------------
+    /******************************************
+     6) SEND EMAIL
+    ******************************************/
     function sendEmail(type) {
       let output = "";
       let subject = "";
       let airportCode = "";
+
       if (type === "departure") {
         output = document.getElementById("departureOutput").textContent.trim();
         if (!output) {
