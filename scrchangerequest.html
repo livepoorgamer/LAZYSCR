@@ -3,147 +3,218 @@
 <head>
   <meta charset="UTF-8">
   <title>SCR Change Message Requests</title>
-  <!-- Google Fonts for 'Orbitron' and 'Roboto Mono' -->
+
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+
   <style>
-    /* ----------------------------
-       BASIC STYLING
-    ----------------------------- */
-    body {
-      /* Futuristic, gradient background */
-      background: linear-gradient(135deg, #131313 0%, #323232 100%);
-      margin: 0;
-      padding: 0;
-      font-family: 'Roboto Mono', monospace; /* Default font */
-      color: #fff; /* White text on dark background */
+    /********************************************
+     1) THEME VARIABLES: Light by default
+     ********************************************/
+    :root {
+      /* Light Theme */
+      --body-bg: #f5f5f5;
+      --text-color: #333;
+      --nav-bg: #fff;
+      --nav-text-color: #333;
+      --primary-color: #00FFD1;
+      --secondary-color: #007BFF;
+      --container-bg: #ffffff;
+      --border-color: #00FFD1;
+      --heading-color: #00FFD1;
+      --input-bg: #ffffff;
+      --input-border: #cccccc;
+      --button-bg-color: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      --button-text-color: #ffffff;
+      --output-bg: #ffffff;
+      --output-border: #00FFD1;
     }
 
-    /* Smooth transitions for hover effects, etc. */
+    /* Dark Theme Override */
+    body.dark-mode {
+      --body-bg: #1a1a1a;
+      --text-color: #eaeaea;
+      --nav-bg: #2a2a2a;
+      --nav-text-color: #f5f5f5;
+      --primary-color: #00FFD1;
+      --secondary-color: #007BFF;
+      --container-bg: #2f2f2f;
+      --border-color: #00ffd1;
+      --heading-color: #00FFD1;
+      --input-bg: #3a3a3a;
+      --input-border: #555555;
+      --button-bg-color: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      --button-text-color: #1a1a1a;
+      --output-bg: #1a1a1a;
+      --output-border: #00ffd1;
+    }
+
+    /********************************************
+     2) GLOBAL & BODY
+     ********************************************/
     * {
+      box-sizing: border-box;
       transition: all 0.2s ease-in-out;
     }
+    body {
+      background: var(--body-bg);
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--text-color);
+    }
+    a {
+      color: var(--nav-text-color);
+      text-decoration: none;
+    }
+    a:hover {
+      color: var(--secondary-color);
+    }
 
-    /* ----------------------------
-       NAVIGATION STYLING
-    ----------------------------- */
+    /********************************************
+     3) NAVIGATION
+     ********************************************/
     nav {
-      background: #1B1B1B; /* Dark nav bar */
+      background: var(--nav-bg);
+      color: var(--nav-text-color);
       padding: 10px 20px;
-      border-bottom: 2px solid #00FFD1; /* A futuristic accent color */
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+      border-bottom: 2px solid var(--primary-color);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     nav ul {
       list-style: none;
       margin: 0;
       padding: 0;
       display: flex;
-      justify-content: flex-start;
-      align-items: center;
     }
     nav li {
       margin-right: 20px;
     }
     nav a {
-      color: #fff;
-      text-decoration: none;
       font-size: 16px;
       font-family: 'Orbitron', sans-serif;
       text-transform: uppercase;
+      color: var(--nav-text-color);
     }
     nav a:hover {
-      color: #00FFD1;
-      text-shadow: 0 0 5px #00FFD1;
+      color: var(--secondary-color);
+    }
+    /* Theme Switch */
+    .theme-switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .theme-switch input {
+      appearance: none;
+      width: 40px;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 20px;
+      position: relative;
+      outline: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .theme-switch input::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background-color: #fff;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+    .theme-switch input:checked {
+      background-color: var(--secondary-color);
+    }
+    .theme-switch input:checked::before {
+      transform: translateX(20px);
     }
 
-    /* ----------------------------
-       CONTAINER STYLING
-    ----------------------------- */
+    /********************************************
+     4) CONTAINER
+     ********************************************/
     .container {
       max-width: 900px;
       margin: 40px auto; 
       padding: 20px;
-      background: #1F1F1F;
+      background: var(--container-bg);
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0.2); /* Slight neon glow */
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.1);
     }
     .container h1 {
       text-transform: uppercase;
       text-align: center;
-      color: #00FFD1;
-      text-shadow: 0 0 8px rgba(0, 255, 209, 0.7);
+      color: var(--heading-color);
       margin-top: 0;
       margin-bottom: 20px;
       font-family: 'Orbitron', sans-serif;
       font-size: 2rem;
     }
     .container h2 {
-      color: #00FFD1;
-      text-shadow: 0 0 5px rgba(0, 255, 209, 0.7);
+      color: var(--heading-color);
       margin-bottom: 20px;
       font-family: 'Orbitron', sans-serif;
       font-size: 1.2rem;
       text-transform: uppercase;
     }
 
-    /* ----------------------------
-       FORMS STYLING
-    ----------------------------- */
+    /********************************************
+     5) FORMS
+     ********************************************/
     form {
       margin-bottom: 20px;
     }
-
     .form-row {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin-bottom: 15px;
     }
-
     .form-group {
       display: flex;
       flex-direction: column;
       width: 100%;
       max-width: 200px;
     }
-
     .form-group label {
       margin-bottom: 5px;
       font-size: 0.85rem;
       font-family: 'Orbitron', sans-serif;
-      color: #00FFD1;
+      color: var(--secondary-color);
     }
-
     .form-group input,
     .form-group select {
       padding: 10px;
-      background: #2E2E2E;
-      color: #FFF;
-      border: 1px solid #444;
+      background: var(--input-bg);
+      color: var(--text-color);
+      border: 1px solid var(--input-border);
       border-radius: 4px;
       font-family: 'Roboto Mono', monospace;
       font-size: 14px;
       outline: none;
       resize: vertical;
     }
-
     .form-group input::placeholder, 
     .form-group select::placeholder {
       color: #aaa;
     }
 
-    /* ----------------------------
-       BUTTONS STYLING
-    ----------------------------- */
-    .button-container {
-      text-align: center;
-      margin: 20px 0;
-    }
-
+    /********************************************
+     6) BUTTONS
+     ********************************************/
     .btn {
       padding: 10px 20px;
       margin: 5px 10px 5px 0;
-      background: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
-      color: #fff;
+      background: var(--button-bg-color);
+      color: var(--button-text-color);
       border: none;
       border-radius: 4px;
       cursor: pointer;
@@ -151,123 +222,76 @@
       text-transform: uppercase;
       font-family: 'Orbitron', sans-serif;
       font-weight: 700;
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0);
     }
     .btn:hover {
       transform: scale(1.05);
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
+      box-shadow: 0 0 8px rgba(0, 255, 209, 0.3);
+    }
+    .button-container {
+      text-align: center;
+      margin: 20px 0;
     }
 
-    /* ----------------------------
-       OUTPUT CONTAINER
-    ----------------------------- */
+    /********************************************
+     7) OUTPUT
+     ********************************************/
     .output-container {
       margin-top: 20px;
       padding: 20px;
-      background: #101010;
-      border: 1px dashed #00FFD1;
+      background: var(--output-bg);
+      border: 1px dashed var(--output-border);
       border-radius: 4px;
       white-space: pre-wrap;
       font-family: 'Roboto Mono', monospace;
-      color: #00FFD1;
+      color: var(--heading-color);
       line-height: 1.5;
     }
     .output-container .heading {
       text-transform: uppercase;
       margin-bottom: 10px;
-      color: #00FFD1;
+      color: var(--heading-color);
       font-family: 'Orbitron', sans-serif;
       font-size: 1.1rem;
     }
 
-    /* ----------------------------
-       HIDDEN CONTAINERS
-    ----------------------------- */
-    #departureContainer,
-    #arrivalContainer {
-      display: none;
+    .requests-container {
+      margin-bottom: 40px;
     }
-
-    /* ----------------------------
-       SCR MESSAGE STYLING
-    ----------------------------- */
-    .scr-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-    .scr-info-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .airport-code {
-      font-weight: bold;
+    .requests-container h2 {
       font-size: 1rem;
-      font-family: 'Orbitron', sans-serif;
+      margin: 10px 0;
     }
 
-    .button-group {
-      display: flex;
-      gap: 5px;
-    }
-
-    .button-group button {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 700;
-    }
-    .email-btn {
-      background: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
-      color: #fff;
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0);
-    }
-    .email-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
-    }
-    .toggle-btn {
-      background: #555;
-      color: #fff;
-      width: 40px;
-      text-align: center;
-      padding: 8px;
-      box-shadow: 0 0 5px rgba(0, 255, 209, 0);
-    }
-    .toggle-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
-    }
-
-    .scr-message {
-      margin-top: 10px;
-      padding: 15px;
-      background: #1E1E1E;
-      border-left: 4px solid #00FFD1;
-      border-radius: 4px;
-      white-space: pre-wrap;
-      font-family: 'Roboto Mono', monospace;
-      color: #00FFD1;
+    /********************************************
+     8) MEDIA QUERIES
+     ********************************************/
+    @media (max-width: 600px) {
+      nav ul {
+        flex-direction: column;
+      }
+      .form-row {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
-
-  <!-- Navigation Bar -->
+  <!-- NAV BAR -->
   <nav>
     <ul>
-      <li><a href="index.html">Home</a></li>
+      <li><a href="index.html">Single Flight</a></li>
+      <li><a href="multiflight.html">Multi Flight</a></li>
+      <li><a href="scrchangerequest.html">SCR Change</a></li>
       <li><a href="historic-log.html">Historic Log</a></li>
-      <li><a href="airport-search.html">Airport Search</a></li>
-      <li><a href="https://forms.gle/nXCQzWxCcH5B1uZd6">LOG ISSUES</a></li>
-      <!-- Add more navigation items here if needed -->
+      <li><a href="airport-search.html">Airport DB</a></li>
+      <li><a href="gcrformat.html">GCR Format</a></li>
+      <li><a href="https://forms.gle/nXCQzWxCcH5B1uZd6">Log Issues</a></li>
     </ul>
+    <!-- Theme Switch -->
+    <div class="theme-switch">
+      <label for="themeToggle">Dark Mode</label>
+      <input type="checkbox" id="themeToggle" aria-label="Toggle Dark Mode">
+    </div>
   </nav>
 
   <!-- Main Container -->
@@ -277,7 +301,7 @@
     <!-- Where all pairs of forms will be placed -->
     <div id="formsWrapper"></div>
 
-    <!-- Button container for adding more / resetting / showing message -->
+    <!-- Button container for adding / resetting / showing message -->
     <div class="button-container">
       <button class="btn" id="addFormsBtn">Add More Requests</button>
       <button class="btn" id="resetBtn">Reset</button>
@@ -287,14 +311,14 @@
     <!-- Container to hold the SCR messages -->
     <div id="outputList" class="output-container">
       <div class="heading">SCR Messages</div>
-      <!-- SCR messages will be appended here -->
+      <!-- SCR messages appended here -->
     </div>
   </div>
 
-  <!-- Hidden template that contains one “pair” of forms -->
+  <!-- Hidden template for the pair of forms -->
   <template id="formsTemplate">
     <div class="requests-container">
-      <h2>Request #</h2> <!-- We'll set the request number dynamically -->
+      <h2>Request #</h2>
 
       <h2>Old Request</h2>
       <form class="old-request-form">
@@ -406,35 +430,54 @@
   </template>
 
   <script>
-    const formsWrapper  = document.getElementById('formsWrapper');
-    const addFormsBtn   = document.getElementById('addFormsBtn');
-    const resetBtn      = document.getElementById('resetBtn');
-    const showSCRBtn    = document.getElementById('showSCRBtn');
-    const formsTemplate = document.getElementById('formsTemplate');
-    const outputList    = document.getElementById('outputList');
+    /********************************************
+     THEME TOGGLE
+    ********************************************/
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    const savedTheme = localStorage.getItem('theme') || 'light';
 
-    // Dictionary of day-of-operation codes
-    const dayOfOperationMap = {
-      0: '0000007', // Sunday
-      1: '1000000', // Monday
-      2: '0200000', // Tuesday
-      3: '0030000', // Wednesday
-      4: '0004000', // Thursday
-      5: '0000500', // Friday
-      6: '0000060', // Saturday
-    };
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        body.classList.add('dark-mode');
+        themeToggle.checked = true;
+      } else {
+        body.classList.remove('dark-mode');
+        themeToggle.checked = false;
+      }
+    }
+    applyTheme(savedTheme);
+
+    themeToggle.addEventListener('change', () => {
+      if (themeToggle.checked) {
+        localStorage.setItem('theme', 'dark');
+        applyTheme('dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+        applyTheme('light');
+      }
+    });
+
+    /********************************************
+     MAIN SCRIPT
+    ********************************************/
+    const formsWrapper = document.getElementById('formsWrapper');
+    const addFormsBtn = document.getElementById('addFormsBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const showSCRBtn = document.getElementById('showSCRBtn');
+    const formsTemplate = document.getElementById('formsTemplate');
+    const outputList = document.getElementById('outputList');
 
     let requestCount = 0; 
-    let emailData = {}; // To store emails fetched from emails.json
+    let emailData = {};
 
-    // On page load, add the first pair and fetch emails.json
+    // On page load, add the first pair
     window.addEventListener('DOMContentLoaded', () => {
       addFormsPair();
       fetchEmails();
     });
 
     addFormsBtn.addEventListener('click', addFormsPair);
-
     resetBtn.addEventListener('click', () => {
       formsWrapper.innerHTML = '';
       outputList.innerHTML   = '<div class="heading">SCR Messages</div>';
@@ -442,42 +485,29 @@
       addFormsPair();
     });
 
-    // Show SCR for each container -> create togglable rows
     showSCRBtn.addEventListener('click', () => {
-      // Clear previous output
       outputList.innerHTML = '<div class="heading">SCR Messages</div>';
-
       const containers = formsWrapper.querySelectorAll('.requests-container');
       if (containers.length === 0) {
         outputList.innerHTML += 'No forms available.';
         return;
       }
-
       containers.forEach((container) => {
         const oldForm = container.querySelector('.old-request-form');
         const newForm = container.querySelector('.new-request-form');
         if (!oldForm || !newForm) return;
-
-        // Extract data
         const oldData = getFormData(oldForm);
         const newData = getFormData(newForm);
-
-        // Validate required fields
         if (!validateFormData(oldData, newData)) {
           alert('Please fill out all required fields.');
           return;
         }
-
-        // Build SCR
         const scrMessage = buildSCRMessage(oldData, newData);
-
-        // Use Old Request airport for the label
         const airportCode = oldData.airport || '???';
 
-        // Create row + hidden message
+        // Build row
         const rowDiv = document.createElement('div');
         rowDiv.classList.add('scr-row');
-
         const infoLeftDiv = document.createElement('div');
         infoLeftDiv.classList.add('scr-info-left');
         const airportSpan = document.createElement('span');
@@ -491,7 +521,6 @@
         const emailBtn = document.createElement('button');
         emailBtn.classList.add('email-btn');
         emailBtn.textContent = 'Email';
-        // Updated logic: Open email client directly with CC and subject
         emailBtn.addEventListener('click', () => {
           sendEmail(airportCode, scrMessage);
         });
@@ -500,12 +529,10 @@
         toggleBtn.classList.add('toggle-btn');
         toggleBtn.textContent = '+';
 
-        // The hidden message
         const msgDiv = document.createElement('div');
         msgDiv.classList.add('scr-message');
         msgDiv.textContent = scrMessage;
 
-        // Toggle show/hide
         toggleBtn.addEventListener('click', () => {
           if (msgDiv.style.display === 'none' || !msgDiv.style.display) {
             msgDiv.style.display = 'block';
@@ -527,45 +554,30 @@
       });
     });
 
-    /** Adds a new pair of forms. Also sets a "Request #n" heading 
-        and ensures text inputs become uppercase. */
     function addFormsPair() {
       requestCount++;
       const clone = formsTemplate.content.cloneNode(true);
-      
-      // Title
       const heading = clone.querySelector('h2');
       if (heading) {
         heading.textContent = `Request #${requestCount}`;
       }
-
-      // Enforce uppercase for text inputs
       const textInputs = clone.querySelectorAll('input[type="text"]');
       textInputs.forEach(input => {
-        // Force actual value to uppercase
         input.addEventListener('input', () => {
           input.value = input.value.toUpperCase();
         });
       });
-
-      // Synchronize Slot Type between Old and New Request
       const oldSlotTypeSelect = clone.querySelector('.old-request-form select[name="slotType"]');
       const newSlotTypeSelect = clone.querySelector('.new-request-form select[name="slotType"]');
-
       if (oldSlotTypeSelect && newSlotTypeSelect) {
-        // Set initial value of New Request SlotType to match Old Request
         newSlotTypeSelect.value = oldSlotTypeSelect.value;
-
-        // Add event listener to Old Request SlotType
         oldSlotTypeSelect.addEventListener('change', (event) => {
           newSlotTypeSelect.value = event.target.value;
         });
       }
-
       formsWrapper.appendChild(clone);
     }
 
-    /** Gather data from forms */
     function getFormData(formEl) {
       const slotType = formEl.querySelector('select[name="slotType"]')?.value || '';
       const airport  = formEl.querySelector('input[name="airport"]')?.value || '';
@@ -576,38 +588,30 @@
       const time     = formEl.querySelector('input[name="time"]')?.value || '';
       const doField  = formEl.querySelector('input[name="do"]')?.value || '';
       const stc      = formEl.querySelector('select[name="stc"]')?.value || '';
-
       return { slotType, airport, flightNo, date, seats, acType, time, doField, stc };
     }
 
-    /** Validate that all required fields are filled */
     function validateFormData(oldReq, newReq) {
-      // Define required fields as per your application's needs
       const requiredFields = ['slotType', 'airport', 'flightNo', 'date', 'seats', 'acType', 'time', 'doField', 'stc'];
-      
       for (let field of requiredFields) {
         if (!oldReq[field] || !newReq[field]) {
           return false;
         }
       }
-
       return true;
     }
 
     function buildSCRMessage(oldReq, newReq) {
-      const seasonCode      = 'W24'; 
+      const seasonCode = 'W24'; 
       const oldReqDateDDMMM = formatDateToDDMMM(oldReq.date) || '01JAN';
-      const oldReqAirport   = oldReq.airport || 'XXX';
-
-      const lineSCR     = 'SCR';
-      const lineSeason  = seasonCode;
-      const lineDate    = oldReqDateDDMMM;
+      const oldReqAirport = oldReq.airport || 'XXX';
+      const lineSCR = 'SCR';
+      const lineSeason = seasonCode;
+      const lineDate = oldReqDateDDMMM;
       const lineAirport = oldReqAirport;
-
       const lineOld = buildRequestLine('C', oldReq);
       const lineNew = buildRequestLine('R', newReq);
-      const lineSI  = `SI SLOT CHG REQ ${oldReqAirport}`;
-
+      const lineSI = `SI SLOT CHG REQ ${oldReqAirport}`;
       return [
         lineSCR,
         lineSeason,
@@ -621,33 +625,24 @@
     }
 
     function buildRequestLine(prefix, req) {
-      // Arrival => no space: e.g. "CFR123"
-      // Departure => space: e.g. "C FR123"
       let flightId;
       if (req.slotType === 'Arrival') {
         flightId = prefix + (req.flightNo || '');
       } else {
         flightId = prefix + ' ' + (req.flightNo || '');
       }
-
-      const dateDDMMM  = formatDateToDDMMM(req.date) || '25DEC';
-      const doCode     = getDayOfOperationCode(req.date);
+      const dateDDMMM = formatDateToDDMMM(req.date) || '25DEC';
+      const doCode = getDayOfOperationCode(req.date);
       let acTypeCode = '000' + (req.acType.replace(/\s/g, '') || '');
-
-      // If STC is "D", replace "73H" with "LJ4"
       if (req.stc === 'D') {
         acTypeCode = 'LJ4';
       }
-
-      // Arrival => station + time
-      // Departure => time + station
       let stationTimeSegment;
       if (req.slotType === 'Arrival') {
         stationTimeSegment = (req.doField || '') + (req.time || '');
       } else {
         stationTimeSegment = (req.time || '') + (req.doField || '');
       }
-
       return [
         flightId,
         dateDDMMM + dateDDMMM,
@@ -662,7 +657,6 @@
       if (!isoDate) return '';
       const [yyyy, mm, dd] = isoDate.split('-');
       if (!yyyy || !mm || !dd) return '';
-
       const monthNames = [
         'JAN','FEB','MAR','APR','MAY','JUN',
         'JUL','AUG','SEP','OCT','NOV','DEC'
@@ -676,12 +670,19 @@
       if (!isoDate) return '0000000';
       const jsDate = new Date(isoDate);
       if (isNaN(jsDate.getTime())) return '0000000';
-
-      const dayIndex = jsDate.getDay(); // Sunday=0, ...
+      const dayIndex = jsDate.getDay();
+      const dayOfOperationMap = {
+        0: '0000007',
+        1: '1000000',
+        2: '0200000',
+        3: '0030000',
+        4: '0004000',
+        5: '0000500',
+        6: '0000060'
+      };
       return dayOfOperationMap[dayIndex] || '0000000';
     }
 
-    /** Function to fetch emails from emails.json */
     async function fetchEmails() {
       try {
         const response = await fetch('assets/emails.json');
@@ -690,36 +691,28 @@
         }
         const data = await response.json();
         emailData = data;
-        console.log('Emails fetched successfully:', emailData);
       } catch (error) {
         console.error('Error fetching emails.json:', error);
         alert('Failed to load email data. Email functionality may be limited.');
       }
     }
 
-    /** Function to send email using mailto: link with CC and dynamic subject */
     function sendEmail(airportCode, scrMessage) {
       if (!emailData || !emailData[airportCode] || !emailData[airportCode].email) {
         alert(`No email address found for airport code: ${airportCode}. Please check emails.json.`);
         return;
       }
-
       const recipient = emailData[airportCode].email;
       const subject = `SLOT CHG REQ ${airportCode}`;
       const body = encodeURIComponent(scrMessage);
       const cc = 'slotdesk@ryanair.com';
-
       const mailtoLink = `mailto:${recipient}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}&body=${body}`;
-
-      // Create a temporary anchor element and trigger click
       const a = document.createElement('a');
       a.href = mailtoLink;
       a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-
-      // Optional: Provide feedback to the user
       alert(`Email client has been opened for ${airportCode}.`);
     }
   </script>
