@@ -359,6 +359,28 @@
   </div>
 
   <script>
+    /******************************************
+     1) FETCH emails.json FROM GITHUB PAGES
+    ******************************************/
+    let airportData = {};
+    window.addEventListener("DOMContentLoaded", () => {
+      fetch("assets/emails.json")
+        .then(response => response.json())
+        .then(data => {
+          airportData = data;
+          console.log("Loaded airport data:", airportData);
+        })
+        .catch(error => {
+          console.error("Error loading emails.json:", error);
+        });
+    });
+    function getAirportEmail(airportCode) {
+      if (airportData[airportCode]) {
+        return airportData[airportCode].email;
+      }
+      return "slotdesk@ryanair.com";
+    }
+
     /****************************************************
      THEME TOGGLE
     ****************************************************/
@@ -434,8 +456,7 @@
 
       for (let line of lines) {
         const parts = line.trim().split(" ");
-        // We allow either 7 or 8 parts
-        // Example: [flight, from, to, date, depTime, arrTime, code, (optional)acType]
+        // Accept either 7 or 8 parts
         if (parts.length !== 7 && parts.length !== 8) {
           console.warn("Invalid input format for line:", line);
           continue;
@@ -449,6 +470,7 @@
         const arrivalTime = parts[5];
         const code = parts[6];
         let aircraftType = null;
+
         if (parts.length === 8) {
           aircraftType = parts[7];
         }
@@ -461,12 +483,12 @@
         const dayOfWeek = parsedDate.toLocaleDateString("en-US", { weekday: "long" });
         const dayOfOperation = getDayOfOperation(dayOfWeek);
 
-        // Break down flight number into prefix/digits/letters
+        // Break down flight number
         const flightPrefix = flightRaw.slice(0, 2);
         let flightNumber = flightRaw.slice(2);
         const flightDigits = flightNumber.match(/\d+/)?.[0] || "";
         let flightLetters = flightNumber.replace(/\d+/g, "");
-        // If flight letters end with P, drop the P
+        // If flight letters end with P, remove P
         if (flightLetters.endsWith("P")) {
           flightLetters = flightLetters.slice(0, -1);
         }
@@ -519,7 +541,7 @@
     }
 
     function getOperationCode(option) {
-      // If D, we return LJ4; otherwise default to 73H
+      // If D, return LJ4; otherwise default 73H
       if (option === "D") return "LJ4";
       return "73H";
     }
@@ -529,16 +551,6 @@
       const day = String(dateObj.getDate()).padStart(2, '0');
       const month = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
       return `${day}${month}`;
-    }
-
-    function getAirportEmail(airportCode) {
-      // Adjust to your actual data/mapping
-      // or fetch from an external JSON as needed
-      const defaultEmailMapping = {
-        JFK: "jfk@airline.com",
-        LAX: "lax@airline.com"
-      };
-      return defaultEmailMapping[airportCode] || "slotdesk@ryanair.com";
     }
 
     /****************************************************
@@ -581,7 +593,7 @@
       const outputList = document.getElementById("outputList");
       outputList.innerHTML = "";
 
-      // Group flights by airport (for departure & arrival)
+      // Group flights by airport
       const airportGroups = {};
       parsedEntries.forEach((data) => {
         const { from, to } = data;
@@ -596,7 +608,7 @@
         airportGroups[to].flights.push({ type: 'arrival', data });
       });
 
-      // Remove duplicate flights (avoid double-adding the same flight)
+      // Remove duplicates
       Object.keys(airportGroups).forEach(airportCode => {
         const seen = new Set();
         airportGroups[airportCode].flights = airportGroups[airportCode].flights.filter(flightEntry => {
@@ -610,10 +622,11 @@
         });
       });
 
-      // Generate SCR message for each grouped airport
+      // Generate SCR message per group
       Object.values(airportGroups).forEach((group, groupIndex) => {
         const { airportCode, flights } = group;
         const scrLines = [];
+
         scrLines.push("SCR");
         scrLines.push("W24");
         scrLines.push(getCurrentDate());
@@ -627,7 +640,6 @@
           // Build operation code
           let opCode;
           if (aircraftType) {
-            // If selected STC is J, handle special logic
             if (option === "J") {
               if (aircraftType === "7M8") {
                 opCode = "1977M8";
@@ -637,15 +649,12 @@
                 opCode = aircraftType;
               }
             } else {
-              // If we have a typed A/C
               opCode = (aircraftType === "738" ? "73H" : (aircraftType === "197" ? "7M8" : aircraftType));
             }
           } else {
-            // If no typed A/C, fallback to standard logic
             opCode = getOperationCode(option);
           }
 
-          // If departure
           if (type === 'departure') {
             if (option === "J") {
               scrLines.push(`${flightType} ${flight} ${date}${date} ${dayOfOperation} ${opCode} ${departureTime}${to} ${option}`);
@@ -653,7 +662,6 @@
               scrLines.push(`${flightType} ${flight} ${date}${date} ${dayOfOperation} ${codePrefix}${opCode} ${departureTime}${to} ${option}`);
             }
           }
-          // If arrival
           else if (type === 'arrival') {
             if (option === "J") {
               scrLines.push(`${flightType}${flight} ${date}${date} ${dayOfOperation} ${opCode} ${from}${arrivalTime} ${option}`);
@@ -700,7 +708,7 @@
 
         outputList.appendChild(scrGroup);
 
-        // Log this message to Historic Log
+        // Log to Historic Log
         const combinedFlightNumbers = flights.map(e => e.data.flight).join(", ");
         const combinedDirections = flights.map(e => e.type).join("/");
         const timestamp = new Date().toISOString().replace("T", " ").split(".")[0];
@@ -761,7 +769,7 @@
         const emailBody = encodeURIComponent(scrOutput);
         const mailtoLink = `mailto:${recipientEmail}?cc=${encodeURIComponent(ccEmail)}&subject=${emailSubject}&body=${emailBody}`;
 
-        // Staggered calls to avoid browser popup blocks
+        // Stagger the opens so the browser doesn't block them
         setTimeout(() => {
           window.open(mailtoLink, '_blank');
           emailsSent += 1;
