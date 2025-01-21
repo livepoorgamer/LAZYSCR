@@ -1,1 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Quick Links</title>
+
+  <!-- Google Fonts: Orbitron for headings, Roboto Mono for text -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" 
+    rel="stylesheet"
+  >
+
+  <style>
+    /********************************************
+     1) THEME VARIABLES: Light by default
+     ********************************************/
+    :root {
+      --body-bg: #f5f5f5;
+      --text-color: #333333;
+      --nav-bg: #ffffff;
+      --nav-text-color: #333333;
+      --primary-color: #00FFD1;
+      --secondary-color: #007BFF;
+      --container-bg: #ffffff;
+      --input-border-color: #cccccc;
+      --button-bg-gradient: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      --button-text-color: #ffffff;
+      --card-bg: #f9f9f9;
+      --card-border: #ccc;
+      --card-shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    /* Dark Theme Overrides */
+    body.dark-mode {
+      --body-bg: #1a1a1a;
+      --text-color: #eaeaea;
+      --nav-bg: #2a2a2a;
+      --nav-text-color: #ffffff;
+      --container-bg: #2e2e2e;
+      --input-border-color: #555;
+      --button-bg-gradient: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      --button-text-color: #ffffff;
+      --card-bg: #222;
+      --card-border: #444;
+      --card-shadow: rgba(0, 0, 0, 0.4);
+    }
+
+    /********************************************
+     2) GLOBAL RESET & BODY
+     ********************************************/
+    * {
+      box-sizing: border-box;
+      transition: all 0.2s ease-in-out;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: var(--body-bg);
+      color: var(--text-color);
+    }
+    a {
+      color: var(--secondary-color);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    a:hover {
+      color: var(--primary-color);
+    }
+
+    /********************************************
+     3) NAVIGATION BAR
+     ********************************************/
+    nav {
+      background: var(--nav-bg);
+      color: var(--nav-text-color);
+      padding: 10px 20px;
+      border-bottom: 2px solid var(--primary-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+    }
+    nav li {
+      margin-right: 20px;
+    }
+    nav a {
+      color: var(--nav-text-color);
+      text-decoration: none;
+      font-size: 16px;
+    }
+    nav a:hover {
+      color: var(--primary-color);
+      text-shadow: 0 0 5px var(--primary-color);
+    }
+    /* Theme Switch */
+    .theme-switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .theme-switch input {
+      appearance: none;
+      width: 40px;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 20px;
+      position: relative;
+      outline: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .theme-switch input::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background-color: #fff;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+    .theme-switch input:checked {
+      background-color: var(--secondary-color);
+    }
+    .theme-switch input:checked::before {
+      transform: translateX(20px);
+    }
+
+    /********************************************
+     4) MAIN CONTAINER & HEADING
+     ********************************************/
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      background: var(--container-bg);
+      border-radius: 8px;
+      box-shadow: 0 0 10px var(--card-shadow);
+    }
+    .container h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin: 0 0 20px;
+      color: var(--secondary-color);
+    }
+
+    /********************************************
+     5) QUICK LINKS SECTION
+     ********************************************/
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .link-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 2px 6px var(--card-shadow);
+      transition: transform 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .link-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--card-shadow);
+    }
+    .link-card h2 {
+      font-size: 1.2rem;
+      margin: 0 0 10px;
+      color: var(--text-color);
+    }
+    .link-card p {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      color: var(--text-color);
+    }
+    .link-card a {
+      margin-top: 10px;
+      display: inline-block;
+      background: var(--button-bg-gradient);
+      color: var(--button-text-color);
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      text-align: center;
+    }
+    .link-card a:hover {
+      text-decoration: none;
+      transform: scale(1.03);
+      box-shadow: 0 0 8px rgba(0, 255, 209, 0.3);
+    }
+
+    @media (max-width: 600px) {
+      nav ul {
+        flex-direction: column;
+      }
+      .theme-switch {
+        margin-top: 10px;
+      }
+      .container {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVIGATION BAR -->
+  <nav>
+    <ul>
+      <li><a href="#">Quick Links</a></li>
+    </ul>
+    <!-- Dark Mode Toggle -->
+    <div class="theme-switch">
+      <label for="themeToggle">Dark Mode</label>
+      <input type="checkbox" id="themeToggle" aria-label="Toggle Dark Mode">
+    </div>
+  </nav>
+
+  <!-- MAIN CONTAINER -->
+  <div class="container">
+    <h1>Quick Links</h1>
+
+    <div class="quick-links">
+      <!-- 1) ACL UK -->
+      <div class="link-card">
+        <h2>ACL UK</h2>
+        <p>
+          The Airport Coordination Limited (ACL) official site for the UK. 
+          Provides coordination services for scheduling and slot management.
+        </p>
+        <a href="https://www.acl-uk.org/" target="_blank" rel="noopener noreferrer">
+          Visit ACL UK
+        </a>
+      </div>
+
+      <!-- 2) Online Coordination (MAIN) -->
+      <div class="link-card">
+        <h2>Online Coordination (Main)</h2>
+        <p>
+          The main website for slot coordination. Submit and manage flight 
+          coordination requests and adjustments in real time.
+        </p>
+        <a href="https://www.online-coordination.com/frontend/#/" target="_blank" rel="noopener noreferrer">
+          Visit Main Site
+        </a>
+      </div>
+
+      <!-- 3) Online Coordination (Backup) -->
+      <div class="link-card">
+        <h2>Online Coordination (Backup)</h2>
+        <p>
+          Backup portal for flight coordination. Use this site if the main 
+          system is unavailable or under maintenance.
+        </p>
+        <a href="https://online-coordination.pdc.com/frontend/#/" target="_blank" rel="noopener noreferrer">
+          Visit Backup Site
+        </a>
+      </div>
+
+      <!-- 4) Airport Coordination -->
+      <div class="link-card">
+        <h2>Airport Coordination</h2>
+        <p>
+          Contains contact information and airport information for Scandinavian countries 
+        </p>
+        <a href="https://airportcoordination.com/" target="_blank" rel="noopener noreferrer">
+          Visit AirportCoordination.com
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /****************************************************
+     THEME TOGGLE
+    ****************************************************/
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    const savedTheme = localStorage.getItem('theme') || 'light';
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        body.classList.add('dark-mode');
+        themeToggle.checked = true;
+      } else {
+        body.classList.remove('dark-mode');
+        themeToggle.checked = false;
+      }
+    }
+
+    // Load saved theme on page load
+    applyTheme(savedTheme);
+
+    // Toggle theme on user input
+    themeToggle.addEventListener('change', () => {
+      if (themeToggle.checked) {
+        localStorage.setItem('theme', 'dark');
+        applyTheme('dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+        applyTheme('light');
+      }
+    });
+  </script>
+</body>
+</html>
 
