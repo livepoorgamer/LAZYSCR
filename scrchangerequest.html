@@ -10,7 +10,7 @@
   <style>
     /********************************************
      1) THEME VARIABLES: Light by default
-     ********************************************/
+    ********************************************/
     :root {
       /* Light Theme */
       --body-bg: #f5f5f5;
@@ -27,7 +27,7 @@
       --button-bg-color: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
       --button-text-color: #ffffff;
       --output-bg: #ffffff;
-      --output-border: #00FFD1;
+      --output-border: #00ffd1;
     }
 
     /* Dark Theme Override */
@@ -36,11 +36,11 @@
       --text-color: #eaeaea;
       --nav-bg: #2a2a2a;
       --nav-text-color: #f5f5f5;
-      --primary-color: #00FFD1;
+      --primary-color: #00ffd1;
       --secondary-color: #007BFF;
       --container-bg: #2f2f2f;
       --border-color: #00ffd1;
-      --heading-color: #00FFD1;
+      --heading-color: #00ffd1;
       --input-bg: #3a3a3a;
       --input-border: #555555;
       --button-bg-color: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
@@ -51,7 +51,7 @@
 
     /********************************************
      2) GLOBAL & BODY
-     ********************************************/
+    ********************************************/
     * {
       box-sizing: border-box;
       transition: all 0.2s ease-in-out;
@@ -72,8 +72,8 @@
     }
 
     /********************************************
-     3) NAVIGATION
-     ********************************************/
+     3) NAVIGATION BAR
+    ********************************************/
     nav {
       background: var(--nav-bg);
       color: var(--nav-text-color);
@@ -101,6 +101,7 @@
     }
     nav a:hover {
       color: var(--secondary-color);
+      text-shadow: 0 0 5px var(--secondary-color);
     }
     /* Theme Switch */
     .theme-switch {
@@ -139,11 +140,11 @@
     }
 
     /********************************************
-     4) CONTAINER
-     ********************************************/
+     4) CONTAINER & HEADINGS
+    ********************************************/
     .container {
       max-width: 900px;
-      margin: 40px auto; 
+      margin: 40px auto;
       padding: 20px;
       background: var(--container-bg);
       border-radius: 12px;
@@ -168,7 +169,7 @@
 
     /********************************************
      5) FORMS
-     ********************************************/
+    ********************************************/
     form {
       margin-bottom: 20px;
     }
@@ -200,7 +201,6 @@
       font-family: 'Roboto Mono', monospace;
       font-size: 14px;
       outline: none;
-      resize: vertical;
     }
     .form-group input::placeholder, 
     .form-group select::placeholder {
@@ -209,7 +209,7 @@
 
     /********************************************
      6) BUTTONS
-     ********************************************/
+    ********************************************/
     .btn {
       padding: 10px 20px;
       margin: 5px 10px 5px 0;
@@ -233,8 +233,8 @@
     }
 
     /********************************************
-     7) OUTPUT
-     ********************************************/
+     7) OUTPUT: SCR MESSAGES
+    ********************************************/
     .output-container {
       margin-top: 20px;
       padding: 20px;
@@ -254,6 +254,42 @@
       font-size: 1.1rem;
     }
 
+    /* Additional styling for the displayed SCR messages */
+    .scr-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .scr-info-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .airport-code {
+      font-weight: bold;
+      font-size: 1rem;
+      font-family: 'Orbitron', sans-serif;
+      color: var(--primary-color);
+    }
+    .button-group {
+      display: flex;
+      gap: 5px;
+    }
+
+    .scr-message {
+      display: none;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: var(--output-bg);
+      border: 1px dashed var(--output-border);
+      border-radius: 4px;
+      white-space: pre-wrap;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--heading-color);
+      line-height: 1.5;
+    }
+
     .requests-container {
       margin-bottom: 40px;
     }
@@ -264,7 +300,7 @@
 
     /********************************************
      8) MEDIA QUERIES
-     ********************************************/
+    ********************************************/
     @media (max-width: 600px) {
       nav ul {
         flex-direction: column;
@@ -471,7 +507,22 @@
     let requestCount = 0; 
     let emailData = {};
 
-    // On page load, add the first pair
+    // Load emails.json
+    async function fetchEmails() {
+      try {
+        const response = await fetch('assets/emails.json');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        emailData = data;
+      } catch (error) {
+        console.error('Error fetching emails.json:', error);
+        alert('Failed to load email data. Email functionality may be limited.');
+      }
+    }
+
+    // On page load
     window.addEventListener('DOMContentLoaded', () => {
       addFormsPair();
       fetchEmails();
@@ -496,20 +547,28 @@
         const oldForm = container.querySelector('.old-request-form');
         const newForm = container.querySelector('.new-request-form');
         if (!oldForm || !newForm) return;
+
+        // Extract data
         const oldData = getFormData(oldForm);
         const newData = getFormData(newForm);
+
+        // Validate
         if (!validateFormData(oldData, newData)) {
           alert('Please fill out all required fields.');
           return;
         }
+
+        // Build SCR
         const scrMessage = buildSCRMessage(oldData, newData);
         const airportCode = oldData.airport || '???';
 
-        // Build row
+        // Create row + hidden message
         const rowDiv = document.createElement('div');
         rowDiv.classList.add('scr-row');
+
         const infoLeftDiv = document.createElement('div');
         infoLeftDiv.classList.add('scr-info-left');
+
         const airportSpan = document.createElement('span');
         airportSpan.classList.add('airport-code');
         airportSpan.textContent = airportCode;
@@ -518,21 +577,25 @@
         const buttonGroup = document.createElement('div');
         buttonGroup.classList.add('button-group');
 
+        // Email Button
         const emailBtn = document.createElement('button');
-        emailBtn.classList.add('email-btn');
+        emailBtn.classList.add('btn');
         emailBtn.textContent = 'Email';
         emailBtn.addEventListener('click', () => {
           sendEmail(airportCode, scrMessage);
         });
 
+        // Toggle Button
         const toggleBtn = document.createElement('button');
-        toggleBtn.classList.add('toggle-btn');
+        toggleBtn.classList.add('btn');
         toggleBtn.textContent = '+';
 
+        // The hidden message
         const msgDiv = document.createElement('div');
         msgDiv.classList.add('scr-message');
         msgDiv.textContent = scrMessage;
 
+        // Toggle show/hide
         toggleBtn.addEventListener('click', () => {
           if (msgDiv.style.display === 'none' || !msgDiv.style.display) {
             msgDiv.style.display = 'block';
@@ -557,16 +620,22 @@
     function addFormsPair() {
       requestCount++;
       const clone = formsTemplate.content.cloneNode(true);
+
+      // Title
       const heading = clone.querySelector('h2');
       if (heading) {
         heading.textContent = `Request #${requestCount}`;
       }
+
+      // Uppercase on text inputs
       const textInputs = clone.querySelectorAll('input[type="text"]');
       textInputs.forEach(input => {
         input.addEventListener('input', () => {
           input.value = input.value.toUpperCase();
         });
       });
+
+      // Sync slot type between old & new
       const oldSlotTypeSelect = clone.querySelector('.old-request-form select[name="slotType"]');
       const newSlotTypeSelect = clone.querySelector('.new-request-form select[name="slotType"]');
       if (oldSlotTypeSelect && newSlotTypeSelect) {
@@ -575,23 +644,25 @@
           newSlotTypeSelect.value = event.target.value;
         });
       }
+
       formsWrapper.appendChild(clone);
     }
 
     function getFormData(formEl) {
       const slotType = formEl.querySelector('select[name="slotType"]')?.value || '';
-      const airport  = formEl.querySelector('input[name="airport"]')?.value || '';
-      const flightNo = formEl.querySelector('input[name="flightNo"]')?.value || '';
+      const airport  = formEl.querySelector('input[name="airport"]')?.value.trim() || '';
+      const flightNo = formEl.querySelector('input[name="flightNo"]')?.value.trim() || '';
       const date     = formEl.querySelector('input[name="date"]')?.value || '';
       const seats    = formEl.querySelector('input[name="seats"]')?.value || '';
-      const acType   = formEl.querySelector('input[name="acType"]')?.value || '';
-      const time     = formEl.querySelector('input[name="time"]')?.value || '';
-      const doField  = formEl.querySelector('input[name="do"]')?.value || '';
+      const acType   = formEl.querySelector('input[name="acType"]')?.value.trim() || '';
+      const time     = formEl.querySelector('input[name="time"]')?.value.trim() || '';
+      const doField  = formEl.querySelector('input[name="do"]')?.value.trim() || '';
       const stc      = formEl.querySelector('select[name="stc"]')?.value || '';
       return { slotType, airport, flightNo, date, seats, acType, time, doField, stc };
     }
 
     function validateFormData(oldReq, newReq) {
+      // define required fields
       const requiredFields = ['slotType', 'airport', 'flightNo', 'date', 'seats', 'acType', 'time', 'doField', 'stc'];
       for (let field of requiredFields) {
         if (!oldReq[field] || !newReq[field]) {
@@ -602,16 +673,19 @@
     }
 
     function buildSCRMessage(oldReq, newReq) {
-      const seasonCode = 'W24'; 
+      const seasonCode      = 'W24'; 
       const oldReqDateDDMMM = formatDateToDDMMM(oldReq.date) || '01JAN';
-      const oldReqAirport = oldReq.airport || 'XXX';
-      const lineSCR = 'SCR';
-      const lineSeason = seasonCode;
-      const lineDate = oldReqDateDDMMM;
+      const oldReqAirport   = oldReq.airport || 'XXX';
+
+      const lineSCR     = 'SCR';
+      const lineSeason  = seasonCode;
+      const lineDate    = oldReqDateDDMMM;
       const lineAirport = oldReqAirport;
+
       const lineOld = buildRequestLine('C', oldReq);
       const lineNew = buildRequestLine('R', newReq);
-      const lineSI = `SI SLOT CHG REQ ${oldReqAirport}`;
+      const lineSI  = `SI SLOT CHG REQ ${oldReqAirport}`;
+
       return [
         lineSCR,
         lineSeason,
@@ -625,24 +699,32 @@
     }
 
     function buildRequestLine(prefix, req) {
+      // prefix + flightNo
       let flightId;
       if (req.slotType === 'Arrival') {
         flightId = prefix + (req.flightNo || '');
       } else {
         flightId = prefix + ' ' + (req.flightNo || '');
       }
-      const dateDDMMM = formatDateToDDMMM(req.date) || '25DEC';
-      const doCode = getDayOfOperationCode(req.date);
+
+      const dateDDMMM  = formatDateToDDMMM(req.date) || '25DEC';
+      const doCode     = getDayOfOperationCode(req.date);
+
+      // default to "000" + acType
       let acTypeCode = '000' + (req.acType.replace(/\s/g, '') || '');
+      // If STC is "D", override to "LJ4"
       if (req.stc === 'D') {
         acTypeCode = 'LJ4';
       }
+
+      // station + time depends on Arrival/Departure
       let stationTimeSegment;
       if (req.slotType === 'Arrival') {
         stationTimeSegment = (req.doField || '') + (req.time || '');
       } else {
         stationTimeSegment = (req.time || '') + (req.doField || '');
       }
+
       return [
         flightId,
         dateDDMMM + dateDDMMM,
@@ -670,7 +752,8 @@
       if (!isoDate) return '0000000';
       const jsDate = new Date(isoDate);
       if (isNaN(jsDate.getTime())) return '0000000';
-      const dayIndex = jsDate.getDay();
+
+      const dayIndex = jsDate.getDay(); // Sunday=0, Monday=1, ...
       const dayOfOperationMap = {
         0: '0000007',
         1: '1000000',
@@ -683,21 +766,8 @@
       return dayOfOperationMap[dayIndex] || '0000000';
     }
 
-    async function fetchEmails() {
-      try {
-        const response = await fetch('assets/emails.json');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        emailData = data;
-      } catch (error) {
-        console.error('Error fetching emails.json:', error);
-        alert('Failed to load email data. Email functionality may be limited.');
-      }
-    }
-
     function sendEmail(airportCode, scrMessage) {
+      // If no email data for this airport, fail gracefully
       if (!emailData || !emailData[airportCode] || !emailData[airportCode].email) {
         alert(`No email address found for airport code: ${airportCode}. Please check emails.json.`);
         return;
@@ -706,13 +776,18 @@
       const subject = `SLOT CHG REQ ${airportCode}`;
       const body = encodeURIComponent(scrMessage);
       const cc = 'slotdesk@ryanair.com';
+
+      // Build mailto link
       const mailtoLink = `mailto:${recipient}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}&body=${body}`;
+
+      // Simulate a click on an <a> to open the email client
       const a = document.createElement('a');
       a.href = mailtoLink;
       a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+
       alert(`Email client has been opened for ${airportCode}.`);
     }
   </script>
