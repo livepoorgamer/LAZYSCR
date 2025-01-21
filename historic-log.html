@@ -14,62 +14,156 @@
   >
 
   <style>
-    /* BASIC STYLING */
-    body {
-      background: linear-gradient(135deg, #131313 0%, #323232 100%);
-      margin: 0;
-      padding: 0;
-      font-family: 'Orbitron', sans-serif;
-      color: #fff;
+    /********************************************
+     1) THEME VARIABLES: Light by default
+     ********************************************/
+    :root {
+      /* Light Theme */
+      --body-bg: #f5f5f5;
+      --text-color: #333;
+      --nav-bg: #fff;
+      --nav-text-color: #333;
+      --primary-color: #00FFD1;
+      --secondary-color: #007BFF;
+      --container-bg: #fff;
+      --border-color: #00FFD1;
+      --table-bg: #fff;
+      --table-border: #444;
+      --table-row-bg: #f9f9f9;
+      --button-bg-gradient: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      --button-text-color: #fff;
+      --scr-bg: #101010;
+      --scr-text: #00FFD1;
     }
+
+    /* Dark Theme Override */
+    body.dark-mode {
+      --body-bg: #1a1a1a;
+      --text-color: #eaeaea;
+      --nav-bg: #2a2a2a;
+      --nav-text-color: #f5f5f5;
+      --container-bg: #2f2f2f;
+      --border-color: #00ffd1;
+      --table-bg: #1f1f1f;
+      --table-border: #555;
+      --table-row-bg: #2a2a2a;
+      --button-bg-gradient: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      --button-text-color: #1a1a1a;
+      --scr-bg: #000;
+      --scr-text: #00FFD1;
+    }
+
+    /********************************************
+     2) GLOBAL & BODY
+     ********************************************/
     * {
+      box-sizing: border-box;
       transition: all 0.2s ease-in-out;
     }
-    /* NAVIGATION */
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--body-bg);
+      font-family: 'Orbitron', sans-serif;
+      color: var(--text-color);
+    }
+    a {
+      color: var(--text-color);
+      text-decoration: none;
+    }
+    a:hover {
+      color: var(--secondary-color);
+    }
+
+    /********************************************
+     3) NAVIGATION
+     ********************************************/
     nav {
-      background: #1B1B1B;
+      background: var(--nav-bg);
+      color: var(--nav-text-color);
       padding: 10px 20px;
-      border-bottom: 2px solid #00FFD1;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+      border-bottom: 2px solid var(--primary-color);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     nav ul {
       list-style: none;
       margin: 0;
       padding: 0;
       display: flex;
-      justify-content: flex-start;
       align-items: center;
     }
     nav li {
       margin-right: 20px;
     }
     nav a {
-      color: #fff;
+      color: var(--nav-text-color);
       text-decoration: none;
       font-size: 16px;
     }
     nav a:hover {
-      color: #00FFD1;
-      text-shadow: 0 0 5px #00FFD1;
+      color: var(--secondary-color);
     }
-    /* CONTAINER */
+    /* Theme Switch */
+    .theme-switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .theme-switch input {
+      appearance: none;
+      width: 40px;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 20px;
+      position: relative;
+      outline: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .theme-switch input::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background-color: #fff;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+    .theme-switch input:checked {
+      background-color: var(--secondary-color);
+    }
+    .theme-switch input:checked::before {
+      transform: translateX(20px);
+    }
+
+    /********************************************
+     4) MAIN CONTAINER
+     ********************************************/
     .container {
       max-width: 1000px;
       margin: 40px auto;
       padding: 20px;
-      background: #1F1F1F;
+      background: var(--container-bg);
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0.2);
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.1);
     }
     .container h1 {
       text-transform: uppercase;
       text-align: center;
-      color: #00FFD1;
-      text-shadow: 0 0 8px rgba(0, 255, 209, 0.7);
+      color: var(--primary-color);
       margin-top: 0;
       margin-bottom: 20px;
     }
-    /* Operator Name Inputs */
+
+    /********************************************
+     5) OPERATOR & SEARCH
+     ********************************************/
     .operator-container {
       display: flex;
       align-items: center;
@@ -83,13 +177,12 @@
     .operator-container input {
       padding: 5px;
       font-size: 14px;
-      border: 1px solid #444;
+      border: 1px solid var(--table-border);
       border-radius: 4px;
-      background: #2E2E2E;
-      color: #fff;
+      background: var(--table-row-bg);
+      color: var(--text-color);
       margin-right: 10px;
     }
-    /* Search Bar */
     .search-container {
       margin-bottom: 20px;
       font-family: 'Roboto Mono', monospace;
@@ -98,74 +191,85 @@
       width: 100%;
       padding: 8px 12px;
       font-size: 14px;
-      border: 1px solid #444;
+      border: 1px solid var(--table-border);
       border-radius: 4px;
-      background: #2E2E2E;
-      color: #fff;
+      background: var(--table-row-bg);
+      color: var(--text-color);
     }
-    /* TABLE STYLING */
+
+    /********************************************
+     6) TABLE
+     ********************************************/
     table {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 20px;
-    }
-    th, td {
-      border: 1px solid #444;
-      padding: 10px;
-      text-align: left;
       font-family: 'Roboto Mono', monospace;
     }
+    th, td {
+      border: 1px solid var(--table-border);
+      padding: 10px;
+      text-align: left;
+    }
     th {
-      background: #2E2E2E;
+      background: var(--table-row-bg);
     }
     tbody tr:nth-child(even) {
-      background: #1A1A1A;
+      background: var(--table-bg);
     }
-    /* BUTTONS */
+
+    /********************************************
+     7) BUTTONS
+     ********************************************/
     button {
       padding: 5px 10px;
       margin: 3px;
-      background: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
-      color: #fff;
+      background: var(--button-bg-gradient);
+      color: var(--button-text-color);
       border: none;
       border-radius: 4px;
       cursor: pointer;
       font-size: 12px;
       text-transform: uppercase;
       font-weight: 700;
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0);
     }
     button:hover {
       transform: scale(1.05);
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
+      box-shadow: 0 0 8px rgba(0, 255, 209, 0.3);
     }
-    /* SCR Message Expandable Area */
+    .download-btn {
+      margin-bottom: 20px;
+    }
+
+    /********************************************
+     8) SCR MESSAGE
+     ********************************************/
     .scr-message {
       display: none;
       white-space: pre-wrap;
-      background: #101010;
-      border: 1px dashed #00FFD1;
+      background: var(--scr-bg);
+      border: 1px dashed var(--primary-color);
       border-radius: 4px;
       padding: 10px;
       margin-top: 5px;
       font-family: 'Roboto Mono', monospace;
-      color: #00FFD1;
-    }
-    /* Download CSV Button */
-    .download-btn {
-      margin-bottom: 20px;
+      color: var(--scr-text);
     }
   </style>
 </head>
 <body>
-  <!-- Navigation Bar -->
+  <!-- NAVIGATION BAR -->
   <nav>
     <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="multiflight.html">Multi Flight Formatter</a></li>
-      <li><a href="airport-search.html">Airport Search</a></li>
-      <li><a href="https://forms.gle/nXCQzWxCcH5B1uZd6">LOG ISSUES</a></li>
+      <li><a href="index.html">Single Flight</a></li>
+      <li><a href="multiflight.html">Multi Flight</a></li>
+      <li><a href="airport-search.html">Airport DB</a></li>
+      <li><a href="https://forms.gle/nXCQzWxCcH5B1uZd6">Log Issues</a></li>
     </ul>
+    <div class="theme-switch">
+      <label for="themeToggle">Dark Mode</label>
+      <input type="checkbox" id="themeToggle" aria-label="Toggle Dark Mode">
+    </div>
   </nav>
 
   <!-- Main Container -->
@@ -198,40 +302,59 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Dynamic rows will be inserted here -->
+        <!-- Dynamic rows inserted here -->
       </tbody>
     </table>
   </div>
 
   <script>
-    // Key for localStorage.
+    /********************************************
+     THEME TOGGLE
+    ********************************************/
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    const savedTheme = localStorage.getItem('theme') || 'light';
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        body.classList.add('dark-mode');
+        themeToggle.checked = true;
+      } else {
+        body.classList.remove('dark-mode');
+        themeToggle.checked = false;
+      }
+    }
+    applyTheme(savedTheme);
+
+    themeToggle.addEventListener('change', () => {
+      if (themeToggle.checked) {
+        localStorage.setItem('theme', 'dark');
+        applyTheme('dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+        applyTheme('light');
+      }
+    });
+
+    /********************************************
+     LOGIC FOR HISTORIC LOG
+    ********************************************/
     const STORAGE_KEY = "historicLog";
 
-    // Retrieve log data from localStorage. If none exists, return an empty array.
     function getHistoricLog() {
       const logData = localStorage.getItem(STORAGE_KEY);
       return logData ? JSON.parse(logData) : [];
     }
-
-    // Save log data back to localStorage.
     function setHistoricLog(logEntries) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(logEntries));
     }
-
-    // Filter log entries to only include entries from today.
     function getTodayLogEntries() {
       const logEntries = getHistoricLog();
-      // Get today's date in ISO format (YYYY-MM-DD).
       const todayISO = new Date().toISOString().slice(0, 10);
-      
-      // Assuming each entry.timestamp is in "YYYY-MM-DD HH:MM:SS" format
       return logEntries.filter(entry => {
         return entry.timestamp && entry.timestamp.slice(0,10) === todayISO;
       });
     }
-
-    // Function to add a log entry and update localStorage.
-    // This should be called from the page that creates SCR messages.
     function addLogEntry(entry) {
       const logEntries = getHistoricLog();
       logEntries.push(entry);
@@ -239,17 +362,13 @@
       populateLogTable();
     }
 
-    // Populate the table with today's log entries.
     function populateLogTable() {
       const tableBody = document.querySelector("#logTable tbody");
-      tableBody.innerHTML = ""; // Clear previous content
-
-      // Get only today's entries.
+      tableBody.innerHTML = "";
       const todayEntries = getTodayLogEntries();
 
       todayEntries.forEach((entry, index) => {
         const tr = document.createElement("tr");
-        // Prepare a searchable text combining various fields.
         tr.dataset.searchText = (
           entry.flightNumber + " " +
           entry.airport + " " +
@@ -257,32 +376,26 @@
           entry.timestamp
         ).toLowerCase();
 
-        // Sequential Number.
         const numberTd = document.createElement("td");
         numberTd.textContent = index + 1;
         tr.appendChild(numberTd);
 
-        // Flight Number.
         const flightTd = document.createElement("td");
         flightTd.textContent = entry.flightNumber;
         tr.appendChild(flightTd);
 
-        // Airport.
         const airportTd = document.createElement("td");
         airportTd.textContent = entry.airport;
         tr.appendChild(airportTd);
 
-        // Type (Arrival or Departure).
         const typeTd = document.createElement("td");
-        typeTd.textContent = entry.direction; // expected values: "Arrival" or "Departure"
+        typeTd.textContent = entry.direction;
         tr.appendChild(typeTd);
 
-        // Timestamp.
         const timestampTd = document.createElement("td");
         timestampTd.textContent = entry.timestamp;
         tr.appendChild(timestampTd);
 
-        // Action button to toggle SCR Message.
         const actionTd = document.createElement("td");
         const toggleBtn = document.createElement("button");
         toggleBtn.textContent = "Show SCR";
@@ -290,7 +403,6 @@
         tr.appendChild(actionTd);
         tableBody.appendChild(tr);
 
-        // Create a row below for the expanded SCR message (initially hidden).
         const scrRow = document.createElement("tr");
         const scrTd = document.createElement("td");
         scrTd.colSpan = 6;
@@ -301,7 +413,6 @@
         scrRow.appendChild(scrTd);
         tableBody.appendChild(scrRow);
 
-        // Toggle the SCR message display.
         toggleBtn.addEventListener("click", function() {
           if (scrMessageDiv.style.display === "none" || scrMessageDiv.style.display === "") {
             scrMessageDiv.style.display = "block";
@@ -314,24 +425,19 @@
       });
     }
 
-    // Search function: filters table rows based on search text.
     function filterTable() {
       const searchTerm = document.getElementById("searchBar").value.trim().toLowerCase();
       const tableBody = document.querySelector("#logTable tbody");
-      // Get all rows that have a data-search-text attribute (these are the main rows).
       const rows = tableBody.querySelectorAll("tr[data-search-text]");
-      
       rows.forEach(row => {
         if (row.dataset.searchText.includes(searchTerm)) {
           row.style.display = "";
-          // Also show the next row (SCR message row) if it is expanded.
           const nextRow = row.nextElementSibling;
           if (nextRow && nextRow.querySelector(".scr-message").style.display !== "none") {
             nextRow.style.display = "";
           }
         } else {
           row.style.display = "none";
-          // Hide the SCR message row as well.
           const nextRow = row.nextElementSibling;
           if (nextRow) {
             nextRow.style.display = "none";
@@ -340,46 +446,30 @@
       });
     }
 
-    // Convert today's log data to CSV and trigger a download.
     function downloadLogAsCSV() {
       const firstName = document.getElementById("firstName").value.trim();
       const lastName  = document.getElementById("lastName").value.trim();
-      
+
       if (!firstName || !lastName) {
         alert("Please enter both your first and last name before downloading the CSV.");
         return;
       }
-      
-      // Create operator initials (first letter of first and last names, in uppercase).
       const operatorInitials = firstName[0].toUpperCase() + lastName[0].toUpperCase();
-      
-      // Generate the current date and time in Zulu (UTC) in the format: YYYYMMDDTHHMMSSZ.
       const now = new Date();
       const year = now.getUTCFullYear();
       const month = String(now.getUTCMonth() + 1).padStart(2, '0');
       const day = String(now.getUTCDate()).padStart(2, '0');
       const hours = String(now.getUTCHours()).padStart(2, '0');
       const minutes = String(now.getUTCMinutes()).padStart(2, '0');
-      const seconds = String(now.getUTCSeconds()).padStart(2, '0');
-      const dateStr = `${year}${month}${day}${hours}${minutes}`;
-      
-      const filename = `${dateStr}_${operatorInitials}.csv`;
+      const filename = `${year}${month}${day}${hours}${minutes}_${operatorInitials}.csv`;
 
-      // Get today's log entries.
       const todayEntries = getTodayLogEntries();
-
-      // Create CSV rows.
       const header = ["Number", "Flight Number", "Airport", "Type", "Timestamp", "SCR Message"];
       const rows = [];
-      
-      // First row: Operator name.
       rows.push([`Operator: ${firstName} ${lastName}`]);
-      // Add an empty row for separation.
       rows.push([]);
-      // Add header row.
       rows.push(header);
-      
-      // Add data rows.
+
       todayEntries.forEach((entry, index) => {
         rows.push([
           index + 1,
@@ -387,14 +477,10 @@
           entry.airport,
           entry.direction,
           entry.timestamp,
-          '"' + entry.scrMessage.replace(/"/g, '""') + '"' // escape quotes.
+          '"' + entry.scrMessage.replace(/"/g, '""') + '"'
         ]);
       });
-      
-      // Convert rows array into CSV text.
       const csvContent = rows.map(row => row.join(",")).join("\n");
-      
-      // Create a blob and trigger the download with the generated file name.
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const downloadLink = document.createElement("a");
@@ -404,17 +490,10 @@
       downloadLink.click();
       document.body.removeChild(downloadLink);
     }
-    
-    // Attach event listener for the Download CSV button.
+
     document.getElementById("downloadCSV").addEventListener("click", downloadLogAsCSV);
-    // Attach event listener for the search bar.
     document.getElementById("searchBar").addEventListener("input", filterTable);
-    
-    // Populate the table when the page loads.
     window.addEventListener("DOMContentLoaded", populateLogTable);
-    
-    // NOTE:
-    // New log entries should be added from other parts of the application using the addLogEntry() function.
   </script>
 </body>
 </html>
