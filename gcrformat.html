@@ -14,123 +14,231 @@
   >
 
   <style>
+    /********************************************
+     1) THEME VARIABLES: Light by default
+     ********************************************/
+    :root {
+      --body-bg: #f5f5f5;
+      --text-color: #333333;
+      --nav-bg: #ffffff;
+      --nav-text-color: #333333;
+      --primary-color: #00FFD1;
+      --secondary-color: #007BFF;
+      --container-bg: #ffffff;
+      --border-color: #00FFD1;
+      --input-bg: #ffffff;
+      --input-border: #cccccc;
+      --output-bg: #f9f9f9;
+      --output-border: #00FFD1;
+      --button-bg-gradient: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      --button-text-color: #ffffff;
+      --error-color: #ff0000;
+    }
+
+    /* Dark Theme Override */
+    body.dark-mode {
+      --body-bg: #1a1a1a;
+      --text-color: #eaeaea;
+      --nav-bg: #2a2a2a;
+      --nav-text-color: #f5f5f5;
+      --primary-color: #00FFD1;
+      --secondary-color: #007BFF;
+      --container-bg: #2e2e2e;
+      --border-color: #00ffd1;
+      --input-bg: #3a3a3a;
+      --input-border: #555555;
+      --output-bg: #1a1a1a;
+      --output-border: #00ffd1;
+      --button-bg-gradient: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      --button-text-color: #1a1a1a;
+      --error-color: #ff4444;
+    }
+
+    /********************************************
+     2) GLOBAL RESET & BODY
+     ********************************************/
+    * {
+      box-sizing: border-box;
+      transition: all 0.2s ease-in-out;
+    }
     body {
-      background: linear-gradient(135deg, #131313 0%, #323232 100%);
       margin: 0;
       padding: 0;
       font-family: 'Orbitron', sans-serif;
-      color: #fff;
+      background: var(--body-bg);
+      color: var(--text-color);
     }
 
-    * {
-      transition: all 0.2s ease-in-out;
-    }
-
+    /********************************************
+     3) NAV
+     ********************************************/
     nav {
-      background: #1B1B1B;
+      background-color: var(--nav-bg);
+      color: var(--nav-text-color);
       padding: 10px 20px;
-      border-bottom: 2px solid #00FFD1;
+      border-bottom: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     nav ul {
       list-style: none;
+      display: flex;
+      gap: 20px;
       margin: 0;
       padding: 0;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
     }
     nav li {
-      margin-right: 20px;
+      margin: 0;
     }
     nav a {
-      color: #fff;
+      color: var(--nav-text-color);
       text-decoration: none;
       font-size: 16px;
     }
+    nav a:hover {
+      color: var(--secondary-color);
+    }
+    .theme-switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .theme-switch input {
+      appearance: none;
+      width: 40px;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 20px;
+      position: relative;
+      outline: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .theme-switch input::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background-color: #fff;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+    .theme-switch input:checked {
+      background-color: var(--secondary-color);
+    }
+    .theme-switch input:checked::before {
+      transform: translateX(20px);
+    }
 
+    /********************************************
+     4) CONTAINER
+     ********************************************/
     .container {
       max-width: 700px;
       margin: 40px auto;
       padding: 20px;
-      background: #1F1F1F;
+      background: var(--container-bg);
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0.2);
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.1);
+    }
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      color: var(--secondary-color);
+      margin-bottom: 20px;
     }
 
+    /********************************************
+     5) INPUTS & BUTTONS
+     ********************************************/
     textarea, input, select {
       width: 100%;
       margin-bottom: 15px;
       padding: 12px;
-      background: #2E2E2E;
-      color: #FFF;
-      border: 1px solid #444;
+      background: var(--input-bg);
+      color: var(--text-color);
+      border: 1px solid var(--input-border);
       border-radius: 4px;
       font-family: 'Roboto Mono', monospace;
       font-size: 14px;
     }
-
     button {
       padding: 10px 20px;
       margin: 5px 10px 5px 0;
-      background: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
-      color: #fff;
+      background: var(--button-bg-gradient);
+      color: var(--button-text-color);
       border: none;
       border-radius: 4px;
       cursor: pointer;
       font-size: 14px;
       font-weight: 700;
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0);
     }
     button:hover {
       transform: scale(1.05);
-      box-shadow: 0 0 10px rgba(0, 255, 209, 0.7);
+      box-shadow: 0 0 8px rgba(0, 255, 209, 0.3);
     }
 
+    /********************************************
+     6) OUTPUT CONTAINER
+     ********************************************/
     .output-container {
       margin-top: 25px;
       padding: 20px;
-      background: #101010;
-      border: 1px dashed #00FFD1;
+      background: var(--output-bg);
+      border: 1px dashed var(--output-border);
       border-radius: 4px;
       white-space: pre-wrap;
       font-family: 'Roboto Mono', monospace;
-      color: #00FFD1;
+      color: var(--secondary-color);
       position: relative;
+      display: none;
     }
-
+    .output-container .heading {
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
     .copy-button, .download-button {
       position: absolute;
       top: 10px;
       right: 10px;
       padding: 5px 10px;
-      background: #007BFF;
+      background: var(--secondary-color);
       border: none;
       border-radius: 4px;
       cursor: pointer;
       font-size: 12px;
       color: #fff;
+      margin-left: 5px;
     }
     .copy-button:hover, .download-button:hover {
       background: #0056b3;
     }
 
-    .heading {
-      font-weight: 700;
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
-
-    /* Error Message Styling */
+    /********************************************
+     7) ERROR MESSAGES & TOAST
+     ********************************************/
     .error-message {
-      color: #FF0000;
+      color: var(--error-color);
       font-size: 12px;
       display: none;
+      margin-top: -10px;
+      margin-bottom: 10px;
     }
     .error {
       display: block;
     }
-
-    /* Toast Notification Styling */
+    .disclaimer {
+      color: var(--error-color);
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 14px;
+    }
     .toast {
       position: fixed;
       bottom: 20px;
@@ -144,16 +252,9 @@
       z-index: 1000;
     }
 
-    /* Disclaimer Styling */
-    .disclaimer {
-      color: #FF0000;
-      font-weight: bold;
-      margin-bottom: 15px;
-      text-align: center;
-      font-size: 14px;
-    }
-
-    /* Responsive Design */
+    /********************************************
+     8) MEDIA QUERIES
+     ********************************************/
     @media (max-width: 600px) {
       .container {
         padding: 15px;
@@ -172,42 +273,46 @@
 <body>
   <nav>
     <ul>
-      <li><a href="#">GCR Formatter</a></li>
+      <li><a href="index.html">Single Flight</a></li>
+      <li><a href="multiflight.html">Multi Flight</a></li>
+      <li><a href="scrchangerequest.html">SCR Change</a></li>
+      <li><a href="historic-log.html">Historic Log</a></li>
+      <li><a href="airport-search.html">Airport DB</a></li>
+      <li><a href="gcrformat.html">GCR Format</a></li>
     </ul>
+    <div class="theme-switch">
+      <label for="themeToggle">Dark Mode</label>
+      <input type="checkbox" id="themeToggle" aria-label="Toggle Dark Mode">
+    </div>
   </nav>
   
   <div class="container">
     <h1>GCR Formatter</h1>
 
     <!-- User input -->
-    <div>
-      <textarea 
-        id="userInput" 
-        aria-label="Flight Input" 
-        placeholder="Enter input in the format: FLIGHT_NUM DEPARTURE_IATA ARRIVAL_IATA DATE DEPARTURE_TIME ARRIVAL_TIME REG"></textarea>
-      <span id="userInputError" class="error-message"></span>
-    </div>
+    <textarea 
+      id="userInput" 
+      aria-label="Flight Input" 
+      placeholder="Enter input in the format: FLIGHT_NUM DEPARTURE_IATA ARRIVAL_IATA DATE DEPARTURE_TIME ARRIVAL_TIME REG"
+    ></textarea>
+    <span id="userInputError" class="error-message"></span>
 
     <!-- Slot Code Input -->
-    <div>
-      <input 
-        type="text" 
-        id="slotCode" 
-        aria-label="Slot Code" 
-        placeholder="Enter Slot Code (e.g., 008L45)">
-      <span id="slotCodeError" class="error-message"></span>
-    </div>
+    <input 
+      type="text" 
+      id="slotCode" 
+      aria-label="Slot Code" 
+      placeholder="Enter Slot Code (e.g., 008L45)"
+    >
+    <span id="slotCodeError" class="error-message"></span>
     
     <!-- Slot Type Selection -->
-    <div>
-      <label for="slotType">Slot Type:</label>
-      <select id="slotType">
-        <option value="NEW">New Slot</option>
-        <option value="CHG">Modified Slot</option>
-        <option value="CNL">Cancelled Slot</option>
-        <!-- Add more options as needed -->
-      </select>
-    </div>
+    <label for="slotType">Slot Type:</label>
+    <select id="slotType">
+      <option value="NEW">New Slot</option>
+      <option value="CHG">Modified Slot</option>
+      <option value="CNL">Cancelled Slot</option>
+    </select>
 
     <!-- Disclaimer -->
     <div class="disclaimer">
@@ -221,7 +326,7 @@
     </div>
 
     <!-- Combined GCR Output -->
-    <div id="gcrContainer" class="output-container" style="display: none;">
+    <div id="gcrContainer" class="output-container">
       <button class="copy-button" onclick="copyToClipboard('gcrOutput')">Copy</button>
       <div class="heading">GCR:</div>
       <pre id="gcrOutput"></pre>
@@ -229,76 +334,98 @@
   </div>
 
   <script>
+    /***********************************************
+     THEME TOGGLE
+    ***********************************************/
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    const savedTheme = localStorage.getItem('theme') || 'light';
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        body.classList.add('dark-mode');
+        themeToggle.checked = true;
+      } else {
+        body.classList.remove('dark-mode');
+        themeToggle.checked = false;
+      }
+    }
+    applyTheme(savedTheme);
+
+    themeToggle.addEventListener('change', () => {
+      if (themeToggle.checked) {
+        localStorage.setItem('theme', 'dark');
+        applyTheme('dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+        applyTheme('light');
+      }
+    });
+
+    /***********************************************
+     CORE LOGIC
+    ***********************************************/
     const iataToIcao = {
-      STN: "EGSS", // London Stansted Airport
-      PMI: "LEPA", // Palma de Mallorca Airport
-      VIE: "LOWW", // Vienna International Airport
-      CPH: "EKCH", // Copenhagen Airport
-      BGY: "LIME", // Bergamo Airport
-      // Add more IATA-to-ICAO mappings as needed
+      STN: "EGSS",
+      PMI: "LEPA",
+      VIE: "LOWW",
+      CPH: "EKCH",
+      BGY: "LIME",
+      // add more if needed
     };
-    
+
     function getIcaoCode(iataCode) {
       return iataToIcao[iataCode.toUpperCase()] || iataCode.toUpperCase();
     }
-    
+
     function parseInput(input) {
       const parts = input.trim().split(/\s+/);
       const userInputError = document.getElementById("userInputError");
       const slotCodeError = document.getElementById("slotCodeError");
-      
-      // Reset error messages
+
       userInputError.textContent = "";
       userInputError.classList.remove("error");
       slotCodeError.textContent = "";
       slotCodeError.classList.remove("error");
-    
+
       if (parts.length !== 7) {
         userInputError.textContent = "Input must have exactly 7 parts.";
         userInputError.classList.add("error");
         return null;
       }
-    
       const [flight, from, to, fullDate, departureTime, arrivalTime, reg] = parts;
-    
-      // Validate IATA codes (3 uppercase letters)
       const iataRegex = /^[A-Z]{3}$/;
-      if (!iataRegex.test(from) || !iataRegex.test(to)) {
-        userInputError.textContent = "Departure and Arrival IATA codes must be three uppercase letters.";
+      if (!iataRegex.test(from.toUpperCase()) || !iataRegex.test(to.toUpperCase())) {
+        userInputError.textContent = "Departure/Arrival IATA codes must be three uppercase letters.";
         userInputError.classList.add("error");
         return null;
       }
-    
-      // Validate date (DDMMMYYYY)
       const dateRegex = /^\d{2}[A-Z]{3}\d{4}$/;
-      if (!dateRegex.test(fullDate)) {
-        userInputError.textContent = "Date must be in the format DDMMMYYYY (e.g., 29DEC2025).";
+      if (!dateRegex.test(fullDate.toUpperCase())) {
+        userInputError.textContent = "Date must be DDMMMYYYY (e.g., 29DEC2025).";
         userInputError.classList.add("error");
         return null;
       }
-    
-      // Validate time (HHMM)
       const timeRegex = /^\d{4}$/;
       if (!timeRegex.test(departureTime) || !timeRegex.test(arrivalTime)) {
-        userInputError.textContent = "Departure and Arrival times must be in HHMM format.";
+        userInputError.textContent = "Times must be HHMM (e.g. 1230).";
         userInputError.classList.add("error");
         return null;
       }
-    
-      // Validate Slot Code
+
       const slotCodeInput = document.getElementById("slotCode").value.trim();
-      const slotCodeRegex = /^[A-Z0-9]{6}$/; // Example: 008L45
-      if (!slotCodeRegex.test(slotCodeInput)) {
-        slotCodeError.textContent = "Slot Code must be 6 characters long, alphanumeric (e.g., 008L45).";
+      const slotCodeRegex = /^[A-Z0-9]{6}$/;
+      if (!slotCodeRegex.test(slotCodeInput.toUpperCase())) {
+        slotCodeError.textContent = "Slot Code must be 6 alphanumeric chars (e.g., 008L45).";
         slotCodeError.classList.add("error");
         return null;
       }
-    
+
       return {
         flight: flight.toUpperCase(),
         from: from.toUpperCase(),
         to: to.toUpperCase(),
-        date: fullDate.slice(0, 5).toUpperCase(), // e.g., "29DEC"
+        date: fullDate.slice(0, 5).toUpperCase(),
         fullDate: fullDate.toUpperCase(),
         departureTime,
         arrivalTime,
@@ -306,66 +433,47 @@
         slotCode: slotCodeInput.toUpperCase(),
       };
     }
-    
+
+    function getSlotType() {
+      const slotTypeSelect = document.getElementById("slotType");
+      return slotTypeSelect ? slotTypeSelect.value : "NEW";
+    }
+
     function buildGcr(data) {
       const { reg, date, slotCode, departureTime, arrivalTime, from, to } = data;
       const departureIcao = getIcaoCode(from);
       const arrivalIcao = getIcaoCode(to);
       const slotType = getSlotType();
-    
-      // Construct flight lines
+
+      // For demonstration, constructing a sample GCR. 
+      // You can adjust the lines to match your exact format.
       const flightLine2 = `N ${reg} ${date} ${slotCode} ${departureTime}${arrivalIcao} D`;
       const flightLine1 = `N${reg} ${date} ${slotCode} ${arrivalIcao}${arrivalTime} D`;
-      
-    
+
       return `GCR
 /REG
 ${departureIcao}
 ${flightLine2}
 ${flightLine1}
-GI ${slotType} REQ ${departureIcao} PPR / SLOT ID NUMBERS PLS`.trim();
+GI ${slotType} REQ ${departureIcao} PPR / SLOT ID NUMBERS PLS`;
     }
-    
-    function getSlotType() {
-      // Enhanced to get slot type from user selection
-      const slotTypeSelect = document.getElementById("slotType");
-      return slotTypeSelect ? slotTypeSelect.value : "NEW";
-    }
-    
+
     function formatGcr() {
-      hideAllContainers(); // Clear previous outputs
-      const input = document.getElementById("userInput").value;
-      const data = parseInput(input);
+      const data = parseInput(document.getElementById("userInput").value);
       if (!data) return;
-    
       const gcrOutputStr = buildGcr(data);
-    
+
       document.getElementById("gcrOutput").textContent = gcrOutputStr;
       document.getElementById("gcrContainer").style.display = "block";
     }
-    
-    function hideAllContainers() {
-      document.getElementById("gcrContainer").style.display = "none";
-      document.getElementById("gcrOutput").textContent = "";
-    }
-    
+
     function copyToClipboard(elementId) {
       const text = document.getElementById(elementId).textContent;
       navigator.clipboard.writeText(text)
         .then(() => showToast('Copied to clipboard!'))
         .catch(err => showToast('Failed to copy.'));
     }
-    
-    function showToast(message) {
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.textContent = message;
-      document.body.appendChild(toast);
-      setTimeout(() => {
-        toast.remove();
-      }, 3000);
-    }
-    
+
     function downloadGcr(elementId) {
       const text = document.getElementById(elementId).textContent;
       const blob = new Blob([text], { type: 'text/plain' });
@@ -375,6 +483,16 @@ GI ${slotType} REQ ${departureIcao} PPR / SLOT ID NUMBERS PLS`.trim();
       a.download = `GCR_${new Date().toISOString().slice(0,10)}.txt`;
       a.click();
       URL.revokeObjectURL(url);
+    }
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
     }
   </script>
 </body>
