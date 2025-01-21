@@ -348,13 +348,15 @@
     function setHistoricLog(logEntries) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(logEntries));
     }
+
+    // Only entries from "today"
     function getTodayLogEntries() {
       const logEntries = getHistoricLog();
-      const todayISO = new Date().toISOString().slice(0, 10);
-      return logEntries.filter(entry => {
-        return entry.timestamp && entry.timestamp.slice(0,10) === todayISO;
-      });
+      const todayISO = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+      return logEntries.filter(entry => entry.timestamp?.slice(0,10) === todayISO);
     }
+
+    // If you want to add new entries from other pages, call addLogEntry({ ... }) from them
     function addLogEntry(entry) {
       const logEntries = getHistoricLog();
       logEntries.push(entry);
@@ -362,59 +364,71 @@
       populateLogTable();
     }
 
+    // Fill the table with today's log entries
     function populateLogTable() {
       const tableBody = document.querySelector("#logTable tbody");
       tableBody.innerHTML = "";
       const todayEntries = getTodayLogEntries();
 
       todayEntries.forEach((entry, index) => {
+        // main row (searchable)
         const tr = document.createElement("tr");
-        tr.dataset.searchText = (
-          entry.flightNumber + " " +
-          entry.airport + " " +
-          entry.direction + " " +
+        tr.dataset.searchText = [
+          entry.flightNumber,
+          entry.airport,
+          entry.direction,
           entry.timestamp
-        ).toLowerCase();
+        ].join(" ").toLowerCase();
 
+        // # column
         const numberTd = document.createElement("td");
         numberTd.textContent = index + 1;
         tr.appendChild(numberTd);
 
+        // Flight Number
         const flightTd = document.createElement("td");
         flightTd.textContent = entry.flightNumber;
         tr.appendChild(flightTd);
 
+        // Airport
         const airportTd = document.createElement("td");
         airportTd.textContent = entry.airport;
         tr.appendChild(airportTd);
 
+        // Type (Arrival/Departure)
         const typeTd = document.createElement("td");
         typeTd.textContent = entry.direction;
         tr.appendChild(typeTd);
 
+        // Timestamp
         const timestampTd = document.createElement("td");
         timestampTd.textContent = entry.timestamp;
         tr.appendChild(timestampTd);
 
+        // Action
         const actionTd = document.createElement("td");
         const toggleBtn = document.createElement("button");
         toggleBtn.textContent = "Show SCR";
         actionTd.appendChild(toggleBtn);
         tr.appendChild(actionTd);
+
         tableBody.appendChild(tr);
 
+        // second row: scr message
         const scrRow = document.createElement("tr");
         const scrTd = document.createElement("td");
         scrTd.colSpan = 6;
+
         const scrMessageDiv = document.createElement("div");
         scrMessageDiv.className = "scr-message";
-        scrMessageDiv.textContent = entry.scrMessage;
+        scrMessageDiv.textContent = entry.scrMessage || "[No SCR content found]";
         scrTd.appendChild(scrMessageDiv);
         scrRow.appendChild(scrTd);
         tableBody.appendChild(scrRow);
 
+        // Toggle the SCR message row
         toggleBtn.addEventListener("click", function() {
-          if (scrMessageDiv.style.display === "none" || scrMessageDiv.style.display === "") {
+          if (!scrMessageDiv.style.display || scrMessageDiv.style.display === "none") {
             scrMessageDiv.style.display = "block";
             toggleBtn.textContent = "Hide SCR";
           } else {
@@ -425,27 +439,30 @@
       });
     }
 
+    // Filter the table rows based on the search input
     function filterTable() {
       const searchTerm = document.getElementById("searchBar").value.trim().toLowerCase();
       const tableBody = document.querySelector("#logTable tbody");
       const rows = tableBody.querySelectorAll("tr[data-search-text]");
+
       rows.forEach(row => {
         if (row.dataset.searchText.includes(searchTerm)) {
           row.style.display = "";
+          // Show the next row if user had toggled the SCR message open
           const nextRow = row.nextElementSibling;
           if (nextRow && nextRow.querySelector(".scr-message").style.display !== "none") {
             nextRow.style.display = "";
           }
         } else {
           row.style.display = "none";
+          // also hide the SCR row
           const nextRow = row.nextElementSibling;
-          if (nextRow) {
-            nextRow.style.display = "none";
-          }
+          if (nextRow) nextRow.style.display = "none";
         }
       });
     }
 
+    // Download the table as CSV, including SCR message
     function downloadLogAsCSV() {
       const firstName = document.getElementById("firstName").value.trim();
       const lastName  = document.getElementById("lastName").value.trim();
@@ -454,7 +471,11 @@
         alert("Please enter both your first and last name before downloading the CSV.");
         return;
       }
-      const operatorInitials = firstName[0].toUpperCase() + lastName[0].toUpperCase();
+
+      // Create operator initials
+      const operatorInitials = (firstName[0] + lastName[0]).toUpperCase();
+
+      // current UTC date/time for filename
       const now = new Date();
       const year = now.getUTCFullYear();
       const month = String(now.getUTCMonth() + 1).padStart(2, '0');
@@ -464,23 +485,42 @@
       const filename = `${year}${month}${day}${hours}${minutes}_${operatorInitials}.csv`;
 
       const todayEntries = getTodayLogEntries();
+
+      // CSV Header
       const header = ["Number", "Flight Number", "Airport", "Type", "Timestamp", "SCR Message"];
+
+      // Prepare rows array
       const rows = [];
+
+      // First row for operator name, and an empty row
       rows.push([`Operator: ${firstName} ${lastName}`]);
       rows.push([]);
       rows.push(header);
 
+      // Add data rows
       todayEntries.forEach((entry, index) => {
+        const scrMsg = entry.scrMessage || "";
+        // Escape double quotes, then replace newlines with "\n" so it stays in one CSV cell
+        const safeScrMsg = scrMsg
+          .replace(/"/g, '""')      // escape quotes
+          .replace(/\r?\n/g, '\\n') // unify line breaks to \n
+          .replace(/\r/g, '\\n');   // fallback if any \r remain
+
+        // Each row is an array of columns
         rows.push([
           index + 1,
-          entry.flightNumber,
-          entry.airport,
-          entry.direction,
-          entry.timestamp,
-          '"' + entry.scrMessage.replace(/"/g, '""') + '"'
+          entry.flightNumber || "",
+          entry.airport || "",
+          entry.direction || "",
+          entry.timestamp || "",
+          // wrap in double quotes so multiline won't break the CSV
+          `"${safeScrMsg}"`
         ]);
       });
+
       const csvContent = rows.map(row => row.join(",")).join("\n");
+
+      // Create a Blob & trigger download
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const downloadLink = document.createElement("a");
@@ -491,6 +531,7 @@
       document.body.removeChild(downloadLink);
     }
 
+    // Wire up event handlers
     document.getElementById("downloadCSV").addEventListener("click", downloadLogAsCSV);
     document.getElementById("searchBar").addEventListener("input", filterTable);
     window.addEventListener("DOMContentLoaded", populateLogTable);
