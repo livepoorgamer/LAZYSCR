@@ -1,20 +1,122 @@
-*//IN THE EVENT OF AUTOMATIC SCR FAILURE//*
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>SCR Management System</title>
+  
+  <!-- Google Fonts (Orbitron & Roboto Mono) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" 
+    rel="stylesheet"
+  >
 
-  <!-- Inline CSS -->
   <style>
-    /* NAVIGATION BAR */
+    /********************************************
+     1) THEME VARIABLES: Light by default
+     ********************************************/
+    :root {
+      /* Light Theme */
+      --body-bg: #f5f5f5;
+      --text-color: #333;
+      --nav-bg: #fff;
+      --nav-text-color: #333;
+      --primary-color: #00FFD1;
+      --secondary-color: #007BFF;
+      --warning-bg: #ff0000;
+      --warning-text: #fff;
+      --container-bg: #fff;
+      --border-color: #00FFD1;
+      --input-bg: #fff;
+      --input-border: #ccc;
+      --output-bg: #f9f9f9;
+      --output-border: #00FFD1;
+      --button-bg-gradient: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      --button-text-color: #fff;
+    }
+
+    /* Dark Theme Override */
+    body.dark-mode {
+      --body-bg: #1a1a1a;
+      --text-color: #eaeaea;
+      --nav-bg: #2a2a2a;
+      --nav-text-color: #f5f5f5;
+      --warning-bg: #cc0000;
+      --warning-text: #fff;
+      --container-bg: #2e2e2e;
+      --border-color: #00ffd1;
+      --input-bg: #3a3a3a;
+      --input-border: #555555;
+      --output-bg: #1a1a1a;
+      --output-border: #00ffd1;
+      --button-bg-gradient: linear-gradient(90deg, #00FFD1 0%, #007BFF 100%);
+      --button-text-color: #1a1a1a;
+    }
+
+    /********************************************
+     2) GLOBAL RESET & SMOOTH TRANSITIONS
+     ********************************************/
+    * {
+      box-sizing: border-box;
+      transition: all 0.2s ease-in-out;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif;
+      background-color: var(--body-bg);
+      color: var(--text-color);
+    }
+    a {
+      color: var(--text-color);
+      text-decoration: none;
+    }
+    a:hover {
+      color: var(--secondary-color);
+    }
+
+    /********************************************
+     3) MOVING WARNING BAR
+     ********************************************/
+    .warning-bar {
+      background-color: var(--warning-bg);
+      color: var(--warning-text);
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      overflow: hidden;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 9999;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    }
+    .warning-bar span {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scrollText 30s linear infinite;
+      white-space: nowrap;
+    }
+    @keyframes scrollText {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-100%); }
+    }
+
+    /********************************************
+     4) NAVIGATION BAR
+     ********************************************/
     nav {
-      background: #1B1B1B; /* Dark nav bar */
+      background-color: var(--nav-bg);
+      color: var(--nav-text-color);
       padding: 10px 20px;
-      border-bottom: 2px solid #00FFD1; 
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+      border-bottom: 2px solid var(--border-color);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-top: 50px; /* offset for warning bar */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     nav ul {
       list-style: none;
@@ -22,178 +124,254 @@
       padding: 0;
       display: flex;
       align-items: center;
+      gap: 10px;
     }
     nav li {
-      margin-right: 20px;
+      margin: 0;
+      padding: 0;
     }
     nav a {
-      color: #fff;
+      color: var(--nav-text-color);
       text-decoration: none;
       font-size: 16px;
     }
     nav a:hover {
-      color: #00FFD1;
-      text-shadow: 0 0 5px #00FFD1;
+      color: var(--secondary-color);
+    }
+    /* Theme Toggle Switch */
+    .theme-switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .theme-switch input {
+      appearance: none;
+      width: 40px;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 20px;
+      position: relative;
+      outline: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .theme-switch input::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background-color: #fff;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+    .theme-switch input:checked {
+      background-color: var(--secondary-color);
+    }
+    .theme-switch input:checked::before {
+      transform: translateX(20px);
     }
 
-    /* General Reset */
-    body, h1, h2, p, input, button {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    /* Body Styling */
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f4f4f9; /* Subtle background */
-      color: #333; /* Modern readable text color */
-      text-align: center;
-    }
-
-    /* Header Styling */
-    header {
-      background-color: #0056b3; /* Darker modern blue */
-      color: white;
-      padding: 15px 20px;
-      font-size: 1.5rem;
-      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Container */
+    /********************************************
+     5) MAIN CONTAINER
+     ********************************************/
     .container {
-      margin: 20px auto;
-      padding: 20px;
       max-width: 700px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      margin: 60px auto;
+      padding: 20px;
+      background-color: var(--container-bg);
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 255, 209, 0.1);
+      font-family: 'Orbitron', sans-serif;
+    }
+    .container h1 {
+      text-transform: uppercase;
+      text-align: center;
+      color: var(--secondary-color);
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 1.8rem;
     }
 
-    /* Button Group */
+    /********************************************
+     6) FORM, BUTTONS, LOG STYLES
+     ********************************************/
+    /* Button Group (like your SCR page) */
     .btn-group {
       display: flex;
-      justify-content: space-between;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
       margin-bottom: 20px;
     }
     .btn-group button {
-      padding: 10px 15px;
-      font-size: 1rem;
-      color: white;
-      background-color: #0056b3;
+      padding: 10px 20px;
+      background: var(--button-bg-gradient);
+      color: var(--button-text-color);
       border: none;
-      border-radius: 8px;
+      border-radius: 4px;
       cursor: pointer;
-      flex: 1;
-      margin: 0 5px;
-      transition: background-color 0.3s, box-shadow 0.2s;
+      font-size: 14px;
+      text-transform: uppercase;
+      font-weight: 700;
     }
     .btn-group button:hover {
-      background-color: #003d80;
-      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+      transform: scale(1.05);
+      box-shadow: 0 0 8px rgba(0, 255, 209, 0.3);
     }
 
-    /* Back to Top */
     #backToTop {
-      display: none; /* hidden by default */
+      display: none;
+      padding: 10px 20px;
+      background: var(--button-bg-gradient);
+      color: var(--button-text-color);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
       position: fixed;
       bottom: 20px;
       right: 20px;
-      padding: 10px 15px;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-      transition: background-color 0.3s;
     }
     #backToTop:hover {
-      background-color: #0056b3;
+      transform: scale(1.05);
+      box-shadow: 0 0 8px rgba(0, 255, 209, 0.3);
     }
 
-    /* Form Section */
-    .form-section, .log-section {
+    /* The form section (SCR) */
+    .form-section {
       margin-top: 20px;
       text-align: left;
     }
-    .form-section {
-      display: none; /* hidden until a button is clicked */
+    .form-section h3 {
+      color: var(--primary-color);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      font-size: 1.2rem;
     }
     .form-group {
       display: flex;
       flex-wrap: wrap;
-      gap: 15px;
+      gap: 10px;
       margin-bottom: 10px;
+      font-family: 'Roboto Mono', monospace;
     }
     .form-group label {
       flex: 1;
       font-size: 0.9rem;
       font-weight: bold;
     }
-    .form-group input, .form-group select {
+    .form-group input, 
+    .form-group select {
       flex: 2;
-      padding: 10px;
+      padding: 8px;
       font-size: 0.9rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      transition: border-color 0.3s;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 4px;
+      color: var(--text-color);
+      font-family: 'Roboto Mono', monospace;
     }
-    .form-group input:focus, .form-group select:focus {
-      border-color: #0056b3;
-      box-shadow: 0px 0px 5px rgba(0, 86, 179, 0.5);
+    .form-group input:focus, 
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--border-color);
+      box-shadow: 0 0 4px rgba(0, 255, 209, 0.3);
     }
 
-    /* SCR and Log Display */
-    #scrMessage, #logContainer {
-      margin-top: 20px;
-      padding: 15px;
-      background-color: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-family: monospace;
-      white-space: pre-wrap;
-      font-size: 0.9rem;
-    }
+    /* The SCR message display */
     #scrMessage {
+      margin-top: 20px;
+      background: var(--output-bg);
+      border: 1px dashed var(--output-border);
+      border-radius: 4px;
+      padding: 10px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+      color: var(--secondary-color);
       display: none; /* hidden initially */
     }
-    #logContainer {
-      display: none;
+
+    /* Log table */
+    .log-section {
+      margin-top: 30px;
+      text-align: left;
+    }
+    .log-section h3 {
+      color: var(--primary-color);
+      margin-bottom: 10px;
+      font-size: 1.2rem;
     }
     table {
       width: 100%;
       border-collapse: collapse;
+      font-family: 'Roboto Mono', monospace;
     }
     table th, table td {
-      padding: 12px;
-      text-align: left;
-      border: 1px solid #ddd;
+      padding: 10px;
+      border: 1px solid var(--input-border);
     }
     table th {
-      background-color: #0056b3;
-      color: white;
-      font-weight: bold;
+      background-color: var(--nav-bg);
+      color: var(--nav-text-color);
     }
     table tr:nth-child(even) {
-      background-color: #f9f9f9;
+      background-color: var(--output-bg);
+    }
+    button[type="button"] {
+      margin-top: 10px;
+    }
+
+    /********************************************
+     7) MEDIA QUERIES
+     ********************************************/
+    @media (max-width: 600px) {
+      nav ul {
+        flex-direction: column;
+      }
+      .theme-switch {
+        margin-top: 10px;
+      }
+      .form-group {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Header and Nav -->
-  <header>
-    <h1>SCR Management System</h1>
-    <nav style="margin-bottom: 20px;">
-      <ul>
-        <li><a href="airport-search.html" class="nav-link">Advanced Airport Search</a></li> 
-        <li><a href="scrchangerequest.html" class="nav-link">SCR Change Request</a></li> 
-      </ul>
-    </nav>
-  </header>
+  <!-- MOVING WARNING BAR -->
+  <div class="warning-bar">
+    <span>TESTING PHASE USE WITH CAUTION. DOUBLE CHECK BEFORE SENDING..... PLEASE MANUALLY ENTER IN GENERAL AVIATION EMAIL FOR LEARJETS IF REQUIRED</span>
+  </div>
 
-  <!-- Main Container -->
+  <!-- NAVIGATION BAR -->
+  <nav>
+    <ul>
+      <li><a href="index.html">Single Flight</a></li>
+      <li><a href="multiflight.html">Multi Flight</a></li>
+      <li><a href="scrchangerequest.html">SCR Change</a></li>
+      <li><a href="historic-log.html">Historic Log</a></li>
+      <li><a href="airport-search.html">Airport DB</a></li>
+      <li><a href="gcrformat.html">GCR Format</a></li>
+      <li><a href="quicklinks.html">Quick Links</a></li>
+      <li><a href="https://forms.gle/nXCQzWxCcH5B1uZd6">Log Issues</a></li>
+    </ul>
+
+    <!-- Theme Toggle -->
+    <div class="theme-switch">
+      <label for="themeToggle">Dark Mode</label>
+      <input type="checkbox" id="themeToggle" aria-label="Toggle Dark Mode">
+    </div>
+  </nav>
+
+  <!-- MAIN CONTAINER -->
   <div class="container" id="mainContainer">
+    <h1>SCR Management System</h1>
+
     <!-- Button Group -->
     <div class="btn-group">
       <button type="button" onclick="createForm('New Slot')">New Slot</button>
@@ -203,7 +381,7 @@
     </div>
 
     <!-- Form Section -->
-    <div id="form-section" class="form-section">
+    <div id="form-section" class="form-section" style="display: none;">
       <h3 id="form-title"></h3>
 
       <div class="form-group">
@@ -266,14 +444,16 @@
         </select>
       </div>
 
-      <button type="button" onclick="showSCR()">SHOW SCR</button>
-      <button type="button" onclick="emailSCR()">EMAIL SCR</button>
+      <div class="btn-group" style="justify-content: flex-start;">
+        <button type="button" onclick="showSCR()">Show SCR</button>
+        <button type="button" onclick="emailSCR()">Email SCR</button>
+      </div>
 
       <div id="scrMessage"></div>
     </div>
 
     <!-- Log Section -->
-    <div id="logContainer" class="log-section">
+    <div id="logContainer" class="log-section" style="display: none;">
       <h3>Message Log</h3>
       <table id="logTable">
         <thead>
@@ -283,22 +463,61 @@
           </tr>
         </thead>
         <tbody>
-          <!-- Filled by showLog() -->
+          <!-- Populated by script -->
         </tbody>
       </table>
       <button type="button" onclick="downloadCSV()">Download CSV</button>
     </div>
   </div>
 
-  <!-- Inline JavaScript -->
+  <!-- THEME TOGGLE + MAIN SCRIPT -->
   <script>
-    // Global variables
+    /******************************************
+     THEME TOGGLE LOGIC
+    ******************************************/
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+
+    // Load any saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    applyTheme(savedTheme);
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        body.classList.add('dark-mode');
+        themeToggle.checked = true;
+      } else {
+        body.classList.remove('dark-mode');
+        themeToggle.checked = false;
+      }
+    }
+
+    themeToggle.addEventListener('change', () => {
+      if (themeToggle.checked) {
+        localStorage.setItem('theme', 'dark');
+        applyTheme('dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+        applyTheme('light');
+      }
+    });
+
+    /******************************************
+     SCR MANAGEMENT CODE
+    ******************************************/
     let slotAction = '';
-    // If you want email data, define it. Right now, it's empty so emailSCR won't do much.
-    let airportEmails = {}; 
+    let airportEmails = {}; // If you have an external JSON, load here
     const logData = [];
 
-    // Show/hide Back to Top Button on scroll
+    // (Optional) Load email data from JSON
+    async function loadEmailData() {
+      // Example:
+      // const response = await fetch('assets/emails.json');
+      // airportEmails = await response.json();
+      // console.log('Loaded email data:', airportEmails);
+    }
+
+    // Show/hide the Back to Top Button on scroll
     window.onscroll = function () {
       const backToTopButton = document.getElementById('backToTop');
       if (document.documentElement.scrollTop > 200 || document.body.scrollTop > 200) {
@@ -320,14 +539,14 @@
       slotAction = action.toUpperCase();
     }
 
-    // Limit seats to 3 digits
+    // Validate seats input length
     function validateSeats(input) {
       if (input.value.length > 3) {
         input.value = input.value.slice(0, 3);
       }
     }
 
-    // Convert date -> W24 day pattern
+    // Generate day value for SCR message
     function getDayValue(date) {
       const dayValues = {
         Sunday: '0000007',
@@ -336,13 +555,13 @@
         Wednesday: '0030000',
         Thursday: '0004000',
         Friday: '0000500',
-        Saturday: '0000060',
+        Saturday: '0000060'
       };
       const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date);
       return dayValues[dayName] || '0000000';
     }
 
-    // Generate & show SCR message
+    // Generate SCR message
     function showSCR() {
       const slotType = document.getElementById('slotType').value;
       const airportCode = document.getElementById('airportCode').value.toUpperCase();
@@ -360,20 +579,20 @@
         return;
       }
 
-      const date = new Date(dateInput);
-      if (isNaN(date)) {
+      const dateObj = new Date(dateInput);
+      if (isNaN(dateObj)) {
         alert('Invalid date format.');
         return;
       }
 
-      const dayValue = getDayValue(date);
-      const day = date.getDate().toString().padStart(2, '0');
+      const dayValue = getDayValue(dateObj);
+      const day = dateObj.getDate().toString().padStart(2, '0');
       const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-      const month = monthNames[date.getMonth()];
+      const month = monthNames[dateObj.getMonth()];
       const formattedDate = `${day}${month}`;
 
-      // Indicate type: N (new), D (delete/cancel), or C (change)
-      let scrTypeIndicator = 'C'; 
+      // Decide if N (new), D (cancel), or C (change)
+      let scrTypeIndicator = 'C';
       if (slotAction === 'CANCEL SLOT') {
         scrTypeIndicator = 'D';
       } else if (slotAction === 'NEW SLOT') {
@@ -386,7 +605,6 @@ ${formattedDate}
 ${airportCode}  
 `;
 
-      // Build the message line
       if (slotType === 'ARRIVAL') {
         scrMessage += `${scrTypeIndicator}${flightNumber} ${formattedDate}${formattedDate} ${dayValue} ${numberOfSeats}${aircraftType} ${destinationOrigin}${time} ${serviceType}  
 SI ${slotAction} REQ ${airportCode}`;
@@ -398,7 +616,6 @@ SI ${slotAction} REQ ${airportCode}`;
         return;
       }
 
-      // Show the SCR message
       const scrMessageDiv = document.getElementById('scrMessage');
       scrMessageDiv.textContent = scrMessage.trim();
       scrMessageDiv.style.display = 'block';
@@ -408,7 +625,7 @@ SI ${slotAction} REQ ${airportCode}`;
       console.log('SCR Message Generated:', scrMessage.trim());
     }
 
-    // Show log in table
+    // Show the log
     function showLog() {
       const logContainer = document.getElementById('logContainer');
       const logTableBody = document.querySelector('#logTable tbody');
@@ -432,20 +649,19 @@ SI ${slotAction} REQ ${airportCode}`;
       logContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // "Email" the SCR (opens mailto)
+    // "Email" the SCR
     function emailSCR() {
       const scrMessage = document.getElementById('scrMessage').textContent;
       const airportCode = document.getElementById('airportCode').value.toUpperCase();
-      // Example: using airportEmails if it existed
-      const emailList = airportEmails[airportCode]?.email || 'someone@example.com';
-      const ccEmail = 'slotdesk@ryanair.com';
+      // Example: if you loaded data from JSON:
+      const emailList = airportEmails[airportCode]?.email || 'slotdesk@ryanair.com';
+      const ccEmail = 'slotdesk@ryanair.com'; // or any CC you want
 
       if (!scrMessage) {
         alert('No SCR message to email. Generate it first.');
         return;
       }
-
-      // For example, if no email is defined for the airport:
+      // If you want to ensure the airport code is recognized:
       // if (!airportEmails[airportCode]) {
       //   alert(`No email found for airport code: ${airportCode}`);
       //   return;
@@ -454,8 +670,6 @@ SI ${slotAction} REQ ${airportCode}`;
       const subject = encodeURIComponent(`${slotAction} REQ ${airportCode}`);
       const body = encodeURIComponent(scrMessage);
       const mailtoLink = `mailto:${emailList}?cc=${encodeURIComponent(ccEmail)}&subject=${subject}&body=${body}`;
-
-      // Open mail client
       window.location.href = mailtoLink;
     }
 
@@ -486,7 +700,11 @@ SI ${slotAction} REQ ${airportCode}`;
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     }
+
+    // On load, optionally fetch external JSON (if you have it)
+    window.addEventListener('DOMContentLoaded', () => {
+      loadEmailData();
+    });
   </script>
 </body>
 </html>
-
