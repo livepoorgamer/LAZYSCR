@@ -78,7 +78,7 @@
     }
 
     /********************************************
-     3) NAVIGATION BAR (Sample links)
+     3) NAVIGATION BAR
      ********************************************/
     nav {
       background-color: var(--nav-bg);
@@ -592,7 +592,7 @@
     </div>
   </template>
 
-  <!-- 3) CHANGE SCR FORM (From your "SCR Change Message Requests" snippet) -->
+  <!-- 3) CHANGE SCR FORM -->
   <template id="changeScrTemplate">
     <div class="change-scr-container" data-slot-action="CHANGE">
       <button class="changeFormRemoveBtn" type="button" onclick="removeForm(this)">Remove Form</button>
@@ -746,15 +746,21 @@
     ******************************************/
     const formsContainer = document.getElementById('formsContainer');
     let logData = [];
-    // If you have JSON with airport emails:
     let airportEmails = {};
 
-    // (Optional) load emails.json
+    // Automatically load your emails.json from /assets/
     async function loadEmailData() {
-      // Example:
-      // const response = await fetch('assets/emails.json');
-      // airportEmails = await response.json();
-      // console.log("Loaded airport emails:", airportEmails);
+      try {
+        const response = await fetch('assets/emails.json');
+        if (!response.ok) {
+          throw new Error(`Failed to load emails.json: status ${response.status}`);
+        }
+        airportEmails = await response.json();
+        console.log("Loaded airport emails:", airportEmails);
+      } catch (error) {
+        console.error("Error fetching emails.json:", error);
+        alert("Could not load airport emails from assets/emails.json. Email functionality may be limited.");
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -876,7 +882,6 @@
         indicator = 'D';
         actionText = 'CANCEL SLOT';
       }
-      // If you wanted to handle "CHG" vs. "C," do that similarly, but we keep it simple.
 
       // Build the SCR lines
       let scrMessage = `SCR  
@@ -921,6 +926,7 @@ SI ${actionText} REQ ${airportCode}`;
 
       // Airport code
       const airportCode = (formDiv.querySelector('.airportCode').value || '').toUpperCase();
+      // Try to find airportEmail from the JSON
       const emailList = airportEmails[airportCode]?.email || 'slotdesk@ryanair.com';
       const ccEmail = 'slotdesk@ryanair.com';
       // subject from the heading
@@ -973,18 +979,18 @@ SI ${actionText} REQ ${airportCode}`;
       const old_dayVal = getDayValue(new Date(old_date));
       const new_dayVal = getDayValue(new Date(new_date));
 
-      // We'll label them: 
+      // We'll label them:
       //  C lines for old, R lines for new 
       const old_indicator = (old_slotType === 'Arrival') ? `C${old_flightNo}` : `C ${old_flightNo}`;
       const new_indicator = (new_slotType === 'Arrival') ? `R${new_flightNo}` : `R ${new_flightNo}`;
-      // For old line
+
       let old_stationTime = '';
       if (old_slotType === 'Arrival') {
         old_stationTime = `${old_do}${old_time}`;
       } else {
         old_stationTime = `${old_time}${old_do}`;
       }
-      // For new line
+
       let new_stationTime = '';
       if (new_slotType === 'Arrival') {
         new_stationTime = `${new_do}${new_time}`;
@@ -1028,7 +1034,7 @@ SI SLOT CHG REQ ${old_airport}`;
         return;
       }
 
-      // For "change," we can guess the relevant airport from old_airport or new_airport.
+      // For "change," we guess the relevant airport from old_airport
       const old_airport = (container.querySelector('.old_airport').value || '').toUpperCase();
       const airportCode = old_airport || '???';
 
@@ -1084,7 +1090,7 @@ SI SLOT CHG REQ ${old_airport}`;
       ];
 
       const csvContent = csvRows
-        .map((row) => row.map((field) => `"${field.replace(/"/g, '""')}"`).join(','))
+        .map((row) => row.map((field) => `"${field.replace(/"/g, '""')}"`).join(',')) 
         .join('\n');
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
