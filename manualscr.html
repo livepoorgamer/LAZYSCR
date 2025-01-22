@@ -1,3 +1,492 @@
-//IN THE EVENT OF AUTOMATIC SCR FAILURE//
+*//IN THE EVENT OF AUTOMATIC SCR FAILURE//*
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SCR Management System</title>
+
+  <!-- Inline CSS -->
+  <style>
+    /* NAVIGATION BAR */
+    nav {
+      background: #1B1B1B; /* Dark nav bar */
+      padding: 10px 20px;
+      border-bottom: 2px solid #00FFD1; 
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+    }
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+    }
+    nav li {
+      margin-right: 20px;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 16px;
+    }
+    nav a:hover {
+      color: #00FFD1;
+      text-shadow: 0 0 5px #00FFD1;
+    }
+
+    /* General Reset */
+    body, h1, h2, p, input, button {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Body Styling */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f9; /* Subtle background */
+      color: #333; /* Modern readable text color */
+      text-align: center;
+    }
+
+    /* Header Styling */
+    header {
+      background-color: #0056b3; /* Darker modern blue */
+      color: white;
+      padding: 15px 20px;
+      font-size: 1.5rem;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Container */
+    .container {
+      margin: 20px auto;
+      padding: 20px;
+      max-width: 700px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Button Group */
+    .btn-group {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .btn-group button {
+      padding: 10px 15px;
+      font-size: 1rem;
+      color: white;
+      background-color: #0056b3;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      flex: 1;
+      margin: 0 5px;
+      transition: background-color 0.3s, box-shadow 0.2s;
+    }
+    .btn-group button:hover {
+      background-color: #003d80;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Back to Top */
+    #backToTop {
+      display: none; /* hidden by default */
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 15px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s;
+    }
+    #backToTop:hover {
+      background-color: #0056b3;
+    }
+
+    /* Form Section */
+    .form-section, .log-section {
+      margin-top: 20px;
+      text-align: left;
+    }
+    .form-section {
+      display: none; /* hidden until a button is clicked */
+    }
+    .form-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+    .form-group label {
+      flex: 1;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+    .form-group input, .form-group select {
+      flex: 2;
+      padding: 10px;
+      font-size: 0.9rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      transition: border-color 0.3s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: #0056b3;
+      box-shadow: 0px 0px 5px rgba(0, 86, 179, 0.5);
+    }
+
+    /* SCR and Log Display */
+    #scrMessage, #logContainer {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+    }
+    #scrMessage {
+      display: none; /* hidden initially */
+    }
+    #logContainer {
+      display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table th, table td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+    table th {
+      background-color: #0056b3;
+      color: white;
+      font-weight: bold;
+    }
+    table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header and Nav -->
+  <header>
+    <h1>SCR Management System</h1>
+    <nav style="margin-bottom: 20px;">
+      <ul>
+        <li><a href="airport-search.html" class="nav-link">Advanced Airport Search</a></li> 
+        <li><a href="scrchangerequest.html" class="nav-link">SCR Change Request</a></li> 
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container" id="mainContainer">
+    <!-- Button Group -->
+    <div class="btn-group">
+      <button type="button" onclick="createForm('New Slot')">New Slot</button>
+      <button type="button" onclick="createForm('Cancel Slot')">Cancel Slot</button>
+      <button type="button" onclick="showLog()">Log</button>
+      <button id="backToTop" type="button" onclick="scrollToTop()">Back to Top</button>
+    </div>
+
+    <!-- Form Section -->
+    <div id="form-section" class="form-section">
+      <h3 id="form-title"></h3>
+
+      <div class="form-group">
+        <label for="slotType">Slot Type:</label>
+        <select id="slotType">
+          <option value="ARRIVAL">ARRIVAL</option>
+          <option value="DEPARTURE">DEPARTURE</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="airportCode">Airport (3 Letters):</label>
+        <input type="text" id="airportCode" maxlength="3" placeholder="e.g., VLC" required />
+      </div>
+
+      <div class="form-group">
+        <label for="flightNumber">Flight No.:</label>
+        <input type="text" id="flightNumber" placeholder="e.g., FR6060" required />
+      </div>
+
+      <div class="form-group">
+        <label for="date">Date:</label>
+        <input type="date" id="date" required />
+      </div>
+
+      <div class="form-group">
+        <label for="numberOfSeats">Seats:</label>
+        <input
+          type="number"
+          id="numberOfSeats"
+          placeholder="e.g., 189"
+          oninput="validateSeats(this)"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="aircraftType">Aircraft:</label>
+        <input type="text" id="aircraftType" placeholder="e.g., 73H" required />
+      </div>
+
+      <div class="form-group">
+        <label for="time">Time:</label>
+        <input type="text" id="time" maxlength="4" placeholder="e.g., 0725" required />
+      </div>
+
+      <div class="form-group">
+        <label for="destinationOrigin">Dest/Orig:</label>
+        <input type="text" id="destinationOrigin" placeholder="e.g., MAD" required />
+      </div>
+
+      <div class="form-group">
+        <label for="serviceType">Service:</label>
+        <select id="serviceType" required>
+          <option value="P">P</option>
+          <option value="J">J</option>
+          <option value="D">D</option>
+          <option value="K">K</option>
+          <option value="X">X</option>
+        </select>
+      </div>
+
+      <button type="button" onclick="showSCR()">SHOW SCR</button>
+      <button type="button" onclick="emailSCR()">EMAIL SCR</button>
+
+      <div id="scrMessage"></div>
+    </div>
+
+    <!-- Log Section -->
+    <div id="logContainer" class="log-section">
+      <h3>Message Log</h3>
+      <table id="logTable">
+        <thead>
+          <tr>
+            <th>Slot Action</th>
+            <th>SCR Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Filled by showLog() -->
+        </tbody>
+      </table>
+      <button type="button" onclick="downloadCSV()">Download CSV</button>
+    </div>
+  </div>
+
+  <!-- Inline JavaScript -->
+  <script>
+    // Global variables
+    let slotAction = '';
+    // If you want email data, define it. Right now, it's empty so emailSCR won't do much.
+    let airportEmails = {}; 
+    const logData = [];
+
+    // Show/hide Back to Top Button on scroll
+    window.onscroll = function () {
+      const backToTopButton = document.getElementById('backToTop');
+      if (document.documentElement.scrollTop > 200 || document.body.scrollTop > 200) {
+        backToTopButton.style.display = 'block';
+      } else {
+        backToTopButton.style.display = 'none';
+      }
+    };
+
+    // Scroll to top
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Show form
+    function createForm(action) {
+      document.getElementById('form-section').style.display = 'block';
+      document.getElementById('form-title').textContent = action + ' Form';
+      slotAction = action.toUpperCase();
+    }
+
+    // Limit seats to 3 digits
+    function validateSeats(input) {
+      if (input.value.length > 3) {
+        input.value = input.value.slice(0, 3);
+      }
+    }
+
+    // Convert date -> W24 day pattern
+    function getDayValue(date) {
+      const dayValues = {
+        Sunday: '0000007',
+        Monday: '1000000',
+        Tuesday: '0200000',
+        Wednesday: '0030000',
+        Thursday: '0004000',
+        Friday: '0000500',
+        Saturday: '0000060',
+      };
+      const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date);
+      return dayValues[dayName] || '0000000';
+    }
+
+    // Generate & show SCR message
+    function showSCR() {
+      const slotType = document.getElementById('slotType').value;
+      const airportCode = document.getElementById('airportCode').value.toUpperCase();
+      const flightNumber = document.getElementById('flightNumber').value.trim();
+      const dateInput = document.getElementById('date').value;
+      const numberOfSeats = document.getElementById('numberOfSeats').value.padStart(3, '0');
+      const aircraftType = document.getElementById('aircraftType').value.toUpperCase();
+      const time = document.getElementById('time').value.padStart(4, '0');
+      const destinationOrigin = document.getElementById('destinationOrigin').value.toUpperCase();
+      const serviceType = document.getElementById('serviceType').value;
+
+      // Quick validation
+      if (!airportCode || !flightNumber || !dateInput || !numberOfSeats || !aircraftType || !time || !destinationOrigin) {
+        alert('Please fill in all fields.');
+        return;
+      }
+
+      const date = new Date(dateInput);
+      if (isNaN(date)) {
+        alert('Invalid date format.');
+        return;
+      }
+
+      const dayValue = getDayValue(date);
+      const day = date.getDate().toString().padStart(2, '0');
+      const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+      const month = monthNames[date.getMonth()];
+      const formattedDate = `${day}${month}`;
+
+      // Indicate type: N (new), D (delete/cancel), or C (change)
+      let scrTypeIndicator = 'C'; 
+      if (slotAction === 'CANCEL SLOT') {
+        scrTypeIndicator = 'D';
+      } else if (slotAction === 'NEW SLOT') {
+        scrTypeIndicator = 'N';
+      }
+
+      let scrMessage = `SCR  
+W24  
+${formattedDate}  
+${airportCode}  
+`;
+
+      // Build the message line
+      if (slotType === 'ARRIVAL') {
+        scrMessage += `${scrTypeIndicator}${flightNumber} ${formattedDate}${formattedDate} ${dayValue} ${numberOfSeats}${aircraftType} ${destinationOrigin}${time} ${serviceType}  
+SI ${slotAction} REQ ${airportCode}`;
+      } else if (slotType === 'DEPARTURE') {
+        scrMessage += `${scrTypeIndicator} ${flightNumber} ${formattedDate}${formattedDate} ${dayValue} ${numberOfSeats}${aircraftType} ${time}${destinationOrigin} ${serviceType}  
+SI ${slotAction} REQ ${airportCode}`;
+      } else {
+        alert('Invalid slot type selected.');
+        return;
+      }
+
+      // Show the SCR message
+      const scrMessageDiv = document.getElementById('scrMessage');
+      scrMessageDiv.textContent = scrMessage.trim();
+      scrMessageDiv.style.display = 'block';
+
+      // Add to log
+      logData.push({ slotAction, scrMessage: scrMessage.trim() });
+      console.log('SCR Message Generated:', scrMessage.trim());
+    }
+
+    // Show log in table
+    function showLog() {
+      const logContainer = document.getElementById('logContainer');
+      const logTableBody = document.querySelector('#logTable tbody');
+      logTableBody.innerHTML = ''; // clear previous logs
+
+      if (logData.length === 0) {
+        logContainer.style.display = 'none';
+        alert('No log data available.');
+        return;
+      }
+
+      logData.forEach((logItem) => {
+        const row = logTableBody.insertRow();
+        const cellAction = row.insertCell(0);
+        const cellMessage = row.insertCell(1);
+        cellAction.textContent = logItem.slotAction;
+        cellMessage.textContent = logItem.scrMessage;
+      });
+
+      logContainer.style.display = 'block';
+      logContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // "Email" the SCR (opens mailto)
+    function emailSCR() {
+      const scrMessage = document.getElementById('scrMessage').textContent;
+      const airportCode = document.getElementById('airportCode').value.toUpperCase();
+      // Example: using airportEmails if it existed
+      const emailList = airportEmails[airportCode]?.email || 'someone@example.com';
+      const ccEmail = 'slotdesk@ryanair.com';
+
+      if (!scrMessage) {
+        alert('No SCR message to email. Generate it first.');
+        return;
+      }
+
+      // For example, if no email is defined for the airport:
+      // if (!airportEmails[airportCode]) {
+      //   alert(`No email found for airport code: ${airportCode}`);
+      //   return;
+      // }
+
+      const subject = encodeURIComponent(`${slotAction} REQ ${airportCode}`);
+      const body = encodeURIComponent(scrMessage);
+      const mailtoLink = `mailto:${emailList}?cc=${encodeURIComponent(ccEmail)}&subject=${subject}&body=${body}`;
+
+      // Open mail client
+      window.location.href = mailtoLink;
+    }
+
+    // Download logs as CSV
+    function downloadCSV() {
+      if (logData.length === 0) {
+        alert('No log data available to download.');
+        return;
+      }
+
+      const csvRows = [
+        ['Slot Action', 'SCR Message'],
+        ...logData.map((item) => [item.slotAction, item.scrMessage.replace(/\n/g, ' ')])
+      ];
+
+      const csvContent = csvRows
+        .map((row) => row.map((field) => `"${field.replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'scr_log.csv');
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
 
