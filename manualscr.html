@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>SCR Management System</title>
+  <title>SCR Management System (New & Cancel Multiple Forms)</title>
   
   <!-- Google Fonts (Orbitron & Roboto Mono) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link 
     href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" 
     rel="stylesheet"
-  >
+  />
 
   <style>
     /********************************************
@@ -138,7 +138,7 @@
     nav a:hover {
       color: var(--secondary-color);
     }
-    /* Theme Toggle Switch */
+    /* Theme Toggle */
     .theme-switch {
       display: flex;
       align-items: center;
@@ -196,9 +196,8 @@
     }
 
     /********************************************
-     6) FORM, BUTTONS, LOG STYLES
+     6) BUTTONS, FORMS, LOG
      ********************************************/
-    /* Button Group (like your SCR page) */
     .btn-group {
       display: flex;
       flex-wrap: wrap;
@@ -241,30 +240,51 @@
       box-shadow: 0 0 8px rgba(0, 255, 209, 0.3);
     }
 
-    /* The form section (SCR) */
-    .form-section {
+    /* Individual SCR form container */
+    .scr-form {
       margin-top: 20px;
-      text-align: left;
+      padding: 10px;
+      border: 1px dashed var(--border-color);
+      border-radius: 6px;
+      position: relative;
+      font-family: 'Roboto Mono', monospace;
+      background-color: var(--output-bg);
     }
-    .form-section h3 {
+    .scr-form h3 {
       color: var(--primary-color);
-      text-transform: uppercase;
-      margin-bottom: 10px;
       font-size: 1.2rem;
+      margin-top: 0;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .remove-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ff5555;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .remove-btn:hover {
+      background: #cc0000;
+      transform: scale(1.05);
     }
     .form-group {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin-bottom: 10px;
-      font-family: 'Roboto Mono', monospace;
     }
     .form-group label {
       flex: 1;
       font-size: 0.9rem;
       font-weight: bold;
     }
-    .form-group input, 
+    .form-group input,
     .form-group select {
       flex: 2;
       padding: 8px;
@@ -275,28 +295,25 @@
       color: var(--text-color);
       font-family: 'Roboto Mono', monospace;
     }
-    .form-group input:focus, 
+    .form-group input:focus,
     .form-group select:focus {
       outline: none;
       border-color: var(--border-color);
       box-shadow: 0 0 4px rgba(0, 255, 209, 0.3);
     }
-
-    /* The SCR message display */
-    #scrMessage {
-      margin-top: 20px;
-      background: var(--output-bg);
+    .scrOutput {
+      margin-top: 10px;
+      padding: 10px;
+      background: var(--container-bg);
       border: 1px dashed var(--output-border);
       border-radius: 4px;
-      padding: 10px;
-      font-family: 'Roboto Mono', monospace;
-      font-size: 0.9rem;
       white-space: pre-wrap;
       color: var(--secondary-color);
-      display: none; /* hidden initially */
+      font-size: 0.9rem;
+      display: none;
     }
 
-    /* Log table */
+    /* Log section */
     .log-section {
       margin-top: 30px;
       text-align: left;
@@ -311,7 +328,8 @@
       border-collapse: collapse;
       font-family: 'Roboto Mono', monospace;
     }
-    table th, table td {
+    table th,
+    table td {
       padding: 10px;
       border: 1px solid var(--input-border);
     }
@@ -321,9 +339,6 @@
     }
     table tr:nth-child(even) {
       background-color: var(--output-bg);
-    }
-    button[type="button"] {
-      margin-top: 10px;
     }
 
     /********************************************
@@ -369,90 +384,21 @@
   </nav>
 
   <!-- MAIN CONTAINER -->
-  <div class="container" id="mainContainer">
+  <div class="container">
     <h1>SCR Management System</h1>
 
-    <!-- Button Group -->
     <div class="btn-group">
-      <button type="button" onclick="createForm('New Slot')">New Slot</button>
-      <button type="button" onclick="createForm('Cancel Slot')">Cancel Slot</button>
+      <!-- We have two separate buttons: Add NEW Slot Form / Add CANCEL Slot Form -->
+      <button type="button" onclick="addNewSlotForm()">Add NEW Slot Form</button>
+      <button type="button" onclick="addCancelSlotForm()">Add CANCEL Slot Form</button>
       <button type="button" onclick="showLog()">Log</button>
       <button id="backToTop" type="button" onclick="scrollToTop()">Back to Top</button>
     </div>
 
-    <!-- Form Section -->
-    <div id="form-section" class="form-section" style="display: none;">
-      <h3 id="form-title"></h3>
+    <!-- All forms will be injected here -->
+    <div id="formsContainer"></div>
 
-      <div class="form-group">
-        <label for="slotType">Slot Type:</label>
-        <select id="slotType">
-          <option value="ARRIVAL">ARRIVAL</option>
-          <option value="DEPARTURE">DEPARTURE</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="airportCode">Airport (3 Letters):</label>
-        <input type="text" id="airportCode" maxlength="3" placeholder="e.g., VLC" required />
-      </div>
-
-      <div class="form-group">
-        <label for="flightNumber">Flight No.:</label>
-        <input type="text" id="flightNumber" placeholder="e.g., FR6060" required />
-      </div>
-
-      <div class="form-group">
-        <label for="date">Date:</label>
-        <input type="date" id="date" required />
-      </div>
-
-      <div class="form-group">
-        <label for="numberOfSeats">Seats:</label>
-        <input
-          type="number"
-          id="numberOfSeats"
-          placeholder="e.g., 189"
-          oninput="validateSeats(this)"
-          required
-        />
-      </div>
-
-      <div class="form-group">
-        <label for="aircraftType">Aircraft:</label>
-        <input type="text" id="aircraftType" placeholder="e.g., 73H" required />
-      </div>
-
-      <div class="form-group">
-        <label for="time">Time:</label>
-        <input type="text" id="time" maxlength="4" placeholder="e.g., 0725" required />
-      </div>
-
-      <div class="form-group">
-        <label for="destinationOrigin">Dest/Orig:</label>
-        <input type="text" id="destinationOrigin" placeholder="e.g., MAD" required />
-      </div>
-
-      <div class="form-group">
-        <label for="serviceType">Service:</label>
-        <select id="serviceType" required>
-          <option value="P">P</option>
-          <option value="J">J</option>
-          <option value="D">D</option>
-          <option value="K">K</option>
-          <option value="X">X</option>
-        </select>
-      </div>
-
-      <div class="btn-group" style="justify-content: flex-start;">
-        <button type="button" onclick="showSCR()">Show SCR</button>
-        <button type="button" onclick="emailSCR()">Email SCR</button>
-      </div>
-
-      <div id="scrMessage"></div>
-    </div>
-
-    <!-- Log Section -->
+    <!-- LOG SECTION -->
     <div id="logContainer" class="log-section" style="display: none;">
       <h3>Message Log</h3>
       <table id="logTable">
@@ -463,14 +409,153 @@
           </tr>
         </thead>
         <tbody>
-          <!-- Populated by script -->
+          <!-- Filled by showSCR() calls -->
         </tbody>
       </table>
       <button type="button" onclick="downloadCSV()">Download CSV</button>
     </div>
   </div>
 
-  <!-- THEME TOGGLE + MAIN SCRIPT -->
+  <!-- TEMPLATES -->
+  <!-- Template for "NEW SLOT" form -->
+  <template id="newSlotTemplate">
+    <div class="scr-form" data-slot-action="NEW">
+      <button class="remove-btn" type="button" onclick="removeForm(this)">Remove Form</button>
+      <h3>NEW SLOT</h3>
+      
+      <div class="form-group">
+        <label>Slot Type:</label>
+        <select class="slotType">
+          <option value="ARRIVAL">ARRIVAL</option>
+          <option value="DEPARTURE">DEPARTURE</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Airport (3 Letters):</label>
+        <input type="text" class="airportCode" maxlength="3" placeholder="e.g. VLC" required />
+      </div>
+
+      <div class="form-group">
+        <label>Flight No.:</label>
+        <input type="text" class="flightNumber" placeholder="e.g., FR6060" required />
+      </div>
+
+      <div class="form-group">
+        <label>Date:</label>
+        <input type="date" class="dateField" required />
+      </div>
+
+      <div class="form-group">
+        <label>Seats:</label>
+        <input type="number" class="numberOfSeats" placeholder="e.g., 189" oninput="validateSeats(this)" required />
+      </div>
+
+      <div class="form-group">
+        <label>Aircraft:</label>
+        <input type="text" class="aircraftType" placeholder="e.g., 73H" required />
+      </div>
+
+      <div class="form-group">
+        <label>Time:</label>
+        <input type="text" class="timeField" maxlength="4" placeholder="e.g., 0725" required />
+      </div>
+
+      <div class="form-group">
+        <label>Dest/Orig:</label>
+        <input type="text" class="destinationOrigin" placeholder="e.g., MAD" required />
+      </div>
+
+      <div class="form-group">
+        <label>Service:</label>
+        <select class="serviceType" required>
+          <option value="P">P</option>
+          <option value="J">J</option>
+          <option value="D">D</option>
+          <option value="K">K</option>
+          <option value="X">X</option>
+        </select>
+      </div>
+
+      <div class="btn-group" style="justify-content: flex-start;">
+        <button type="button" onclick="showSCR(this)">Show SCR</button>
+        <button type="button" onclick="emailSCR(this)">Email SCR</button>
+      </div>
+
+      <div class="scrOutput"></div>
+    </div>
+  </template>
+
+  <!-- Template for "CANCEL SLOT" form -->
+  <template id="cancelSlotTemplate">
+    <div class="scr-form" data-slot-action="CANCEL">
+      <button class="remove-btn" type="button" onclick="removeForm(this)">Remove Form</button>
+      <h3>CANCEL SLOT</h3>
+      
+      <div class="form-group">
+        <label>Slot Type:</label>
+        <select class="slotType">
+          <option value="ARRIVAL">ARRIVAL</option>
+          <option value="DEPARTURE">DEPARTURE</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Airport (3 Letters):</label>
+        <input type="text" class="airportCode" maxlength="3" placeholder="e.g. VLC" required />
+      </div>
+
+      <div class="form-group">
+        <label>Flight No.:</label>
+        <input type="text" class="flightNumber" placeholder="e.g., FR6060" required />
+      </div>
+
+      <div class="form-group">
+        <label>Date:</label>
+        <input type="date" class="dateField" required />
+      </div>
+
+      <div class="form-group">
+        <label>Seats:</label>
+        <input type="number" class="numberOfSeats" placeholder="e.g., 189" oninput="validateSeats(this)" required />
+      </div>
+
+      <div class="form-group">
+        <label>Aircraft:</label>
+        <input type="text" class="aircraftType" placeholder="e.g., 73H" required />
+      </div>
+
+      <div class="form-group">
+        <label>Time:</label>
+        <input type="text" class="timeField" maxlength="4" placeholder="e.g., 0725" required />
+      </div>
+
+      <div class="form-group">
+        <label>Dest/Orig:</label>
+        <input type="text" class="destinationOrigin" placeholder="e.g., MAD" required />
+      </div>
+
+      <div class="form-group">
+        <label>Service:</label>
+        <select class="serviceType" required>
+          <option value="P">P</option>
+          <option value="J">J</option>
+          <option value="D">D</option>
+          <option value="K">K</option>
+          <option value="X">X</option>
+        </select>
+      </div>
+
+      <div class="btn-group" style="justify-content: flex-start;">
+        <button type="button" onclick="showSCR(this)">Show SCR</button>
+        <button type="button" onclick="emailSCR(this)">Email SCR</button>
+      </div>
+
+      <div class="scrOutput"></div>
+    </div>
+  </template>
+
+  <!-- SCRIPT -->
   <script>
     /******************************************
      THEME TOGGLE LOGIC
@@ -478,7 +563,7 @@
     const themeToggle = document.getElementById('themeToggle');
     const body = document.body;
 
-    // Load any saved theme
+    // Load saved theme
     const savedTheme = localStorage.getItem('theme') || 'light';
     applyTheme(savedTheme);
 
@@ -503,21 +588,50 @@
     });
 
     /******************************************
-     SCR MANAGEMENT CODE
+     GLOBAL DATA
     ******************************************/
-    let slotAction = '';
-    let airportEmails = {}; // If you have an external JSON, load here
-    const logData = [];
+    let logData = [];
+    // If you have a JSON with airport emails:
+    let airportEmails = {};
 
-    // (Optional) Load email data from JSON
+    // Optional: fetch your JSON for emails
     async function loadEmailData() {
-      // Example:
+      // For example:
       // const response = await fetch('assets/emails.json');
       // airportEmails = await response.json();
-      // console.log('Loaded email data:', airportEmails);
+      // console.log("Loaded airport emails:", airportEmails);
     }
 
-    // Show/hide the Back to Top Button on scroll
+    window.addEventListener('DOMContentLoaded', () => {
+      loadEmailData();
+    });
+
+    /******************************************
+     ADD / REMOVE FORM LOGIC
+    ******************************************/
+    function addNewSlotForm() {
+      const template = document.getElementById('newSlotTemplate');
+      const clone = template.content.cloneNode(true);
+      document.getElementById('formsContainer').appendChild(clone);
+    }
+
+    function addCancelSlotForm() {
+      const template = document.getElementById('cancelSlotTemplate');
+      const clone = template.content.cloneNode(true);
+      document.getElementById('formsContainer').appendChild(clone);
+    }
+
+    function removeForm(removeButton) {
+      // removeButton is inside .scr-form
+      const formDiv = removeButton.closest('.scr-form');
+      if (formDiv) {
+        formDiv.remove();
+      }
+    }
+
+    /******************************************
+     BACK TO TOP
+    ******************************************/
     window.onscroll = function () {
       const backToTopButton = document.getElementById('backToTop');
       if (document.documentElement.scrollTop > 200 || document.body.scrollTop > 200) {
@@ -527,27 +641,23 @@
       }
     };
 
-    // Scroll to top
     function scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Show form
-    function createForm(action) {
-      document.getElementById('form-section').style.display = 'block';
-      document.getElementById('form-title').textContent = action + ' Form';
-      slotAction = action.toUpperCase();
-    }
-
-    // Validate seats input length
+    /******************************************
+     FIELD VALIDATION (Seats)
+    ******************************************/
     function validateSeats(input) {
       if (input.value.length > 3) {
         input.value = input.value.slice(0, 3);
       }
     }
 
-    // Generate day value for SCR message
-    function getDayValue(date) {
+    /******************************************
+     GET DAY VALUE
+    ******************************************/
+    function getDayValue(dateObj) {
       const dayValues = {
         Sunday: '0000007',
         Monday: '1000000',
@@ -557,24 +667,32 @@
         Friday: '0000500',
         Saturday: '0000060'
       };
-      const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date);
+      const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(dateObj);
       return dayValues[dayName] || '0000000';
     }
 
-    // Generate SCR message
-    function showSCR() {
-      const slotType = document.getElementById('slotType').value;
-      const airportCode = document.getElementById('airportCode').value.toUpperCase();
-      const flightNumber = document.getElementById('flightNumber').value.trim();
-      const dateInput = document.getElementById('date').value;
-      const numberOfSeats = document.getElementById('numberOfSeats').value.padStart(3, '0');
-      const aircraftType = document.getElementById('aircraftType').value.toUpperCase();
-      const time = document.getElementById('time').value.padStart(4, '0');
-      const destinationOrigin = document.getElementById('destinationOrigin').value.toUpperCase();
-      const serviceType = document.getElementById('serviceType').value;
+    /******************************************
+     SHOW SCR (PER-FORM)
+    ******************************************/
+    function showSCR(buttonEl) {
+      // Find parent .scr-form
+      const formDiv = buttonEl.closest('.scr-form');
+      if (!formDiv) return;
 
-      // Quick validation
-      if (!airportCode || !flightNumber || !dateInput || !numberOfSeats || !aircraftType || !time || !destinationOrigin) {
+      // 'NEW' or 'CANCEL' from data-slot-action attribute
+      const slotAction = formDiv.getAttribute('data-slot-action') || 'NEW';
+      
+      const slotType = formDiv.querySelector('.slotType').value;
+      const airportCode = formDiv.querySelector('.airportCode').value.trim().toUpperCase();
+      const flightNumber = formDiv.querySelector('.flightNumber').value.trim();
+      const dateInput = formDiv.querySelector('.dateField').value;
+      const seats = formDiv.querySelector('.numberOfSeats').value.padStart(3, '0');
+      const aircraftType = formDiv.querySelector('.aircraftType').value.trim().toUpperCase();
+      const time = formDiv.querySelector('.timeField').value.padStart(4, '0');
+      const destOrig = formDiv.querySelector('.destinationOrigin').value.trim().toUpperCase();
+      const service = formDiv.querySelector('.serviceType').value;
+
+      if (!airportCode || !flightNumber || !dateInput || !seats || !aircraftType || !time || !destOrig) {
         alert('Please fill in all fields.');
         return;
       }
@@ -585,51 +703,90 @@
         return;
       }
 
+      // Decide the indicator: 'N' for new, 'D' for cancel
+      let actionIndicator = 'C'; // default to 'C' for safety
+      if (slotAction === 'NEW') {
+        actionIndicator = 'N';
+      } else if (slotAction === 'CANCEL') {
+        actionIndicator = 'D';
+      }
+
       const dayValue = getDayValue(dateObj);
       const day = dateObj.getDate().toString().padStart(2, '0');
       const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
       const month = monthNames[dateObj.getMonth()];
       const formattedDate = `${day}${month}`;
 
-      // Decide if N (new), D (cancel), or C (change)
-      let scrTypeIndicator = 'C';
-      if (slotAction === 'CANCEL SLOT') {
-        scrTypeIndicator = 'D';
-      } else if (slotAction === 'NEW SLOT') {
-        scrTypeIndicator = 'N';
-      }
+      // For final display, let's store a text label
+      let actionText = slotAction === 'NEW' ? 'NEW SLOT' : 'CANCEL SLOT';
 
-      let scrMessage = `SCR  
+      // Build SCR
+      let scr = `SCR  
 W24  
 ${formattedDate}  
 ${airportCode}  
 `;
 
       if (slotType === 'ARRIVAL') {
-        scrMessage += `${scrTypeIndicator}${flightNumber} ${formattedDate}${formattedDate} ${dayValue} ${numberOfSeats}${aircraftType} ${destinationOrigin}${time} ${serviceType}  
-SI ${slotAction} REQ ${airportCode}`;
-      } else if (slotType === 'DEPARTURE') {
-        scrMessage += `${scrTypeIndicator} ${flightNumber} ${formattedDate}${formattedDate} ${dayValue} ${numberOfSeats}${aircraftType} ${time}${destinationOrigin} ${serviceType}  
-SI ${slotAction} REQ ${airportCode}`;
+        scr += `${actionIndicator}${flightNumber} ${formattedDate}${formattedDate} ${dayValue} ${seats}${aircraftType} ${destOrig}${time} ${service}  
+SI ${actionText} REQ ${airportCode}`;
       } else {
-        alert('Invalid slot type selected.');
+        // DEPARTURE
+        scr += `${actionIndicator} ${flightNumber} ${formattedDate}${formattedDate} ${dayValue} ${seats}${aircraftType} ${time}${destOrig} ${service}  
+SI ${actionText} REQ ${airportCode}`;
+      }
+
+      // Display in form
+      const outputEl = formDiv.querySelector('.scrOutput');
+      outputEl.textContent = scr.trim();
+      outputEl.style.display = 'block';
+
+      // Add to global log
+      logData.push({
+        slotAction: actionText,
+        scrMessage: scr.trim()
+      });
+      console.log('SCR generated:', scr.trim());
+    }
+
+    /******************************************
+     EMAIL SCR (PER-FORM)
+    ******************************************/
+    function emailSCR(buttonEl) {
+      // Find parent .scr-form
+      const formDiv = buttonEl.closest('.scr-form');
+      if (!formDiv) return;
+
+      const outputEl = formDiv.querySelector('.scrOutput');
+      const scrMessage = outputEl.textContent.trim();
+      if (!scrMessage) {
+        alert('No SCR message to email. Generate it first.');
         return;
       }
 
-      const scrMessageDiv = document.getElementById('scrMessage');
-      scrMessageDiv.textContent = scrMessage.trim();
-      scrMessageDiv.style.display = 'block';
+      // Grab the airport code from the form
+      const airportCode = formDiv.querySelector('.airportCode').value.trim().toUpperCase();
+      // Example: if you have loaded airportEmails[airportCode]
+      const emailList = airportEmails[airportCode]?.email || 'slotdesk@ryanair.com';
+      const ccEmail = 'slotdesk@ryanair.com';
 
-      // Add to log
-      logData.push({ slotAction, scrMessage: scrMessage.trim() });
-      console.log('SCR Message Generated:', scrMessage.trim());
+      // Derive subject from the form's heading or the first lines
+      const headingText = formDiv.querySelector('h3')?.textContent.toUpperCase() || 'SCR REQUEST';
+      let subject = headingText.includes('CANCEL') 
+        ? `CANCEL SLOT REQ ${airportCode}` 
+        : `NEW SLOT REQ ${airportCode}`;
+
+      const mailtoLink = `mailto:${emailList}?cc=${encodeURIComponent(ccEmail)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(scrMessage)}`;
+      window.location.href = mailtoLink;
     }
 
-    // Show the log
+    /******************************************
+     SHOW LOG
+    ******************************************/
     function showLog() {
       const logContainer = document.getElementById('logContainer');
       const logTableBody = document.querySelector('#logTable tbody');
-      logTableBody.innerHTML = ''; // clear previous logs
+      logTableBody.innerHTML = ''; // Clear old data
 
       if (logData.length === 0) {
         logContainer.style.display = 'none';
@@ -637,43 +794,21 @@ SI ${slotAction} REQ ${airportCode}`;
         return;
       }
 
-      logData.forEach((logItem) => {
+      logData.forEach(item => {
         const row = logTableBody.insertRow();
         const cellAction = row.insertCell(0);
         const cellMessage = row.insertCell(1);
-        cellAction.textContent = logItem.slotAction;
-        cellMessage.textContent = logItem.scrMessage;
+        cellAction.textContent = item.slotAction;
+        cellMessage.textContent = item.scrMessage;
       });
 
       logContainer.style.display = 'block';
       logContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // "Email" the SCR
-    function emailSCR() {
-      const scrMessage = document.getElementById('scrMessage').textContent;
-      const airportCode = document.getElementById('airportCode').value.toUpperCase();
-      // Example: if you loaded data from JSON:
-      const emailList = airportEmails[airportCode]?.email || 'slotdesk@ryanair.com';
-      const ccEmail = 'slotdesk@ryanair.com'; // or any CC you want
-
-      if (!scrMessage) {
-        alert('No SCR message to email. Generate it first.');
-        return;
-      }
-      // If you want to ensure the airport code is recognized:
-      // if (!airportEmails[airportCode]) {
-      //   alert(`No email found for airport code: ${airportCode}`);
-      //   return;
-      // }
-
-      const subject = encodeURIComponent(`${slotAction} REQ ${airportCode}`);
-      const body = encodeURIComponent(scrMessage);
-      const mailtoLink = `mailto:${emailList}?cc=${encodeURIComponent(ccEmail)}&subject=${subject}&body=${body}`;
-      window.location.href = mailtoLink;
-    }
-
-    // Download logs as CSV
+    /******************************************
+     DOWNLOAD CSV
+    ******************************************/
     function downloadCSV() {
       if (logData.length === 0) {
         alert('No log data available to download.');
@@ -682,7 +817,10 @@ SI ${slotAction} REQ ${airportCode}`;
 
       const csvRows = [
         ['Slot Action', 'SCR Message'],
-        ...logData.map((item) => [item.slotAction, item.scrMessage.replace(/\n/g, ' ')])
+        ...logData.map((item) => [
+          item.slotAction,
+          item.scrMessage.replace(/\n/g, ' '),
+        ])
       ];
 
       const csvContent = csvRows
@@ -700,11 +838,6 @@ SI ${slotAction} REQ ${airportCode}`;
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     }
-
-    // On load, optionally fetch external JSON (if you have it)
-    window.addEventListener('DOMContentLoaded', () => {
-      loadEmailData();
-    });
   </script>
 </body>
 </html>
