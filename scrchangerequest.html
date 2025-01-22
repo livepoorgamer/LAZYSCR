@@ -5,7 +5,10 @@
   <title>SCR Change Message Requests</title>
 
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap"
+    rel="stylesheet"
+  >
 
   <style>
     /********************************************
@@ -292,21 +295,42 @@
 
     .requests-container {
       margin-bottom: 40px;
+      position: relative; /* to position the delete button in corner if desired */
     }
     .requests-container h2 {
       font-size: 1rem;
       margin: 10px 0;
     }
 
-    /********************************************
-     8) MEDIA QUERIES
-    ********************************************/
+    /* The remove button for each request pair */
+    .remove-request-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: 5px 10px;
+      background: #ff5555;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      text-transform: uppercase;
+    }
+    .remove-request-btn:hover {
+      background: #cc0000;
+      transform: scale(1.05);
+    }
+
     @media (max-width: 600px) {
       nav ul {
         flex-direction: column;
       }
       .form-row {
         flex-direction: column;
+      }
+      .remove-request-btn {
+        top: 40px;
       }
     }
   </style>
@@ -354,6 +378,9 @@
   <!-- Hidden template for the pair of forms -->
   <template id="formsTemplate">
     <div class="requests-container">
+      <!-- Remove button for this specific form pair -->
+      <button class="remove-request-btn" type="button">Delete</button>
+
       <h2>Request #</h2>
 
       <h2>Old Request</h2>
@@ -524,7 +551,7 @@
 
     // On page load
     window.addEventListener('DOMContentLoaded', () => {
-      addFormsPair();
+      addFormsPair(); // add the first pair by default
       fetchEmails();
     });
 
@@ -533,7 +560,7 @@
       formsWrapper.innerHTML = '';
       outputList.innerHTML   = '<div class="heading">SCR Messages</div>';
       requestCount = 0;
-      addFormsPair();
+      addFormsPair(); // re-add a fresh pair
     });
 
     showSCRBtn.addEventListener('click', () => {
@@ -620,15 +647,22 @@
     function addFormsPair() {
       requestCount++;
       const clone = formsTemplate.content.cloneNode(true);
+      const containerElem = clone.querySelector('.requests-container');
 
       // Title
-      const heading = clone.querySelector('h2');
+      const heading = containerElem.querySelector('h2');
       if (heading) {
         heading.textContent = `Request #${requestCount}`;
       }
 
+      // Remove button
+      const removeBtn = containerElem.querySelector('.remove-request-btn');
+      removeBtn.addEventListener('click', () => {
+        containerElem.remove();
+      });
+
       // Uppercase on text inputs
-      const textInputs = clone.querySelectorAll('input[type="text"]');
+      const textInputs = containerElem.querySelectorAll('input[type="text"]');
       textInputs.forEach(input => {
         input.addEventListener('input', () => {
           input.value = input.value.toUpperCase();
@@ -636,16 +670,16 @@
       });
 
       // Sync slot type between old & new
-      const oldSlotTypeSelect = clone.querySelector('.old-request-form select[name="slotType"]');
-      const newSlotTypeSelect = clone.querySelector('.new-request-form select[name="slotType"]');
+      const oldSlotTypeSelect = containerElem.querySelector('.old-request-form select[name="slotType"]');
+      const newSlotTypeSelect = containerElem.querySelector('.new-request-form select[name="slotType"]');
       if (oldSlotTypeSelect && newSlotTypeSelect) {
-        newSlotTypeSelect.value = oldSlotTypeSelect.value;
+        // copy value if user changes old
         oldSlotTypeSelect.addEventListener('change', (event) => {
           newSlotTypeSelect.value = event.target.value;
         });
       }
 
-      formsWrapper.appendChild(clone);
+      formsWrapper.appendChild(containerElem);
     }
 
     function getFormData(formEl) {
